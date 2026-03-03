@@ -1,6 +1,6 @@
 // IoAwaitable Protocol — Self-Contained Compiler Explorer Demo
 //
-// Inlined from Boost.Capy (https://github.com/cppalliance/capy)
+// Inlined from Capy (https://github.com/cppalliance/capy)
 // Copyright (c) 2025 Vinnie Falco (vinnie.falco@gmail.com)
 // Distributed under the Boost Software License, Version 1.0.
 //

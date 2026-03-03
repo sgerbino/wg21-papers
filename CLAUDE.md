@@ -124,17 +124,24 @@ Rules for all work on WG21 papers in this repository.
     **Prose in code fences** (markdown, plain text) -
     wrap at word boundaries with no continuation indent
 
+## Lists
+
+32. Always insert a blank line before a bullet or numbered list.
+    Pandoc does not recognise a list that immediately follows a
+    prose line without a separating blank line - the items render
+    as inline text in both HTML and PDF
+
 ## Structure
 
-32. Sections with subsections should have at least one introductory
+33. Sections with subsections should have at least one introductory
     sentence between the section heading and the first subsection
     heading - do not leave an empty section heading
-33. Every paper must contain a `## Revision History` section,
+34. Every paper must contain a `## Revision History` section,
     placed immediately after the Abstract's trailing `---` and
     before Section 1. Each revision is an H3 subheading in the
     form `### R<n>: <Month> <Year> (<pre-Meeting mailing>)`
     followed by a bullet list of changes
-34. References and citations - for readers of printed copies:
+35. References and citations - for readers of printed copies:
     - Every hyperlink in the document body must also appear
       in the References section
     - Every hyperlink in the document body must have a
@@ -160,10 +167,10 @@ Rules for all work on WG21 papers in this repository.
 
 ## Tone
 
-35. Do not present options as predetermined conclusions. When
+36. Do not present options as predetermined conclusions. When
     recommending alternatives to a committee, present them as options
     to contemplate, not dictated outcomes
-36. Avoid politically charged comparisons - do not invoke other
+37. Avoid politically charged comparisons - do not invoke other
     contentious features as analogies unless the comparison is
     structurally precise. If the structures being compared are
     fundamentally different, the analogy will be perceived as
