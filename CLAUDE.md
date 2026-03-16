@@ -231,3 +231,16 @@ Rules for all work on WG21 papers in this repository.
     structurally precise. If the structures being compared are
     fundamentally different, the analogy will be perceived as
     political
+
+## Abstract
+
+41. Every abstract opens with a single sentence on its own line -
+    the brutal summary. No citations, no paper numbers, no
+    hedging. The sentence must be true, complete, and
+    unsentimental. It is the sentence a reader remembers after
+    forgetting everything else. Examples:
+    - "Three deployed executor models were replaced by one that
+      was never deployed."
+    - "The committee voted that sender/receiver covers
+      networking. No sender-based networking has shipped."
+    The rest of the abstract follows after a blank line
