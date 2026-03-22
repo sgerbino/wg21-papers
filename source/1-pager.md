@@ -24,9 +24,9 @@ These papers contain all of the analysis and supporting material to deliver netw
 - [P4090R0](https://isocpp.org/files/papers/P4090R0.pdf) - Sender I/O: A Constructed Comparison
 - [P4091R0](https://isocpp.org/files/papers/P4091R0.pdf) - Two Error Models
 - [P4123R0](https://isocpp.org/files/papers/P4123R0.pdf) - The Cost of Senders for Coroutine I/O
-- [D4124R0](https://isocpp.org/files/papers/D4124R0.pdf) - Domain-Aware Combinators
+- [P4124R0](https://isocpp.org/files/papers/P4124R0.pdf) - Combinators and Compound Results from I/O
 - [P4126R0](https://isocpp.org/files/papers/P4126R0.pdf) - A Universal Continuation Model
-- [D4127R0](https://isocpp.org/files/papers/D4127R0.pdf) - The Coroutine Frame Allocator Timing Problem
+- [P4127R0](https://isocpp.org/files/papers/P4127R0.pdf) - The Coroutine Frame Allocator Timing Problem
 
 ## Interoperability
 
@@ -35,7 +35,7 @@ These papers contain all of the analysis and supporting material to deliver netw
 
 ## Field Experience
 
-- [D4125R0](https://isocpp.org/files/papers/D4125R0.pdf) - Field Experience: Porting a Derivatives Exchange to Coroutine-Native I/O
+- [P4125R0](https://isocpp.org/files/papers/P4125R0.pdf) - Field Experience: Porting a Derivatives Exchange to Coroutine-Native I/O
 
 ## Retrospectives
 
@@ -52,7 +52,7 @@ These papers contain all of the analysis and supporting material to deliver netw
 - [P4048R0](https://isocpp.org/files/papers/P4048R0.pdf) - Networking for C++29: A Call to Action
 - [P4100R0](https://isocpp.org/files/papers/P4100R0.pdf) - The Network Endeavor: Coroutine-Native I/O for C++29
 - [D4045R0](https://isocpp.org/files/papers/D4045R0.pdf) - Response to P4043R0
-- [P4129R1](https://isocpp.org/files/papers/P4129R1.pdf) - The Dynamics of Voting in WG21
+- [P4129R0](https://isocpp.org/files/papers/P4129R0.pdf) - The Dynamics of Voting in WG21
 - [P4130R0](https://isocpp.org/files/papers/P4130R0.pdf) - The Convenership's Structural Influence Over WG21
 - [P4131R0](https://isocpp.org/files/papers/P4131R0.pdf) - Retrospective: Effects of the WG21 Train Model
 - [P4133R0](https://isocpp.org/files/papers/P4133R0.pdf) - What Every Proposal Must Contain
@@ -60,4 +60,4 @@ These papers contain all of the analysis and supporting material to deliver netw
 
 ## Safety
 
-- [D0000R0](https://isocpp.org/files/papers/D0000R0.pdf) - PAVE: Profile Analysis and Verification Evidence
+- [P4137R0](https://isocpp.org/files/papers/P4137R0.pdf) - PAVE: Profile Analysis and Verification Evidence
