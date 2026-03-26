@@ -25,7 +25,7 @@ audience: LEWG
 
 Safe interfaces should be the default. They should validate input, maintain invariants, and protect users from misuse. However, C++ also needs an explicit path for trusted data - when the precondition is already satisfied at a boundary and re-validation is pure overhead.
 
-This pattern appears in the standard library, in production Boost libraries, in the current `cstring_view` proposal, and in coroutine-based concurrency libraries. Four independent examples follow.
+This pattern appears in the standard library, in production Boost libraries, in the current `cstring_view` proposal, and in coroutine-based concurrency libraries. Four independent examples follow. A fifth section applies the pattern to `cstring_view` constructor design.
 
 ## 2. Standard Precedent
 
@@ -109,7 +109,81 @@ The structured path is the default. The unstructured path requires a longer name
 
 The consequences of misuse are higher in concurrency than in data validation - a wrong `pct_string_view` produces garbage data, while a wrong detached task produces data races. That severity is precisely why the escape hatch must be designed rather than left to raw `std::thread` or `std::async`, which offer none of these guardrails. Eliminating the escape hatch does not eliminate unstructured concurrency; it pushes programmers toward worse tools.
 
-## 6. Conclusion
+## 6. `cstring_view` Constructors
+
+[P3655R3](https://wg21.link/p3655r3)<sup>[10]</sup> ("cstring_view") proposes `std::cstring_view`, a non-owning view guaranteed to be null-terminated. The type fills a real gap: `std::string` owns and null-terminates, `std::string_view` does not own and does not null-terminate, and `cstring_view` does not own but does null-terminate. Over 2,100 independent implementations on GitHub confirm the demand. The `substr` split - one-argument returning `cstring_view`, two-argument returning `string_view` - and the deletion of `remove_suffix` show careful attention to the null-termination invariant.
+
+The escape-hatch pattern from Sections 2-5 applies directly to the constructor set. P3655R3's pointer-and-length constructor has a narrow contract:
+
+```cpp
+constexpr basic_cstring_view(const charT* str,
+    size_type len);   // Precondition: str[len] == '\0'.
+```
+
+Violating the precondition is undefined behavior. The design purchases O(1) construction for callers who already hold null-terminated data. Completely reasonable when the data is trusted.
+
+LEWG designs are evaluated in a climate where safety is a first-order concern. A constructor whose public interface admits undefined behavior when a caller provides unterminated data will face scrutiny that a constructor with well-defined behavior for all inputs does not. This is an observable condition the design operates in.
+
+Two callers illustrate the tension:
+
+```cpp
+void caller_a(DIR* dir)
+{
+    dirent* de = ::readdir(dir);
+    const char* p = de->d_name;
+    std::size_t n = de->d_namlen;
+
+    // OS guarantees null-termination. O(1) desired.
+    cstring_view name(p, n);
+    consume(name);
+}
+
+void caller_b(std::span<const char> buffer)
+{
+    const char* p = buffer.data();
+    std::size_t n = buffer.size();
+
+    // Data origin unknown. Null-termination not guaranteed.
+    cstring_view name(p, n);  // UB if not null-terminated.
+    consume(name);
+}
+```
+
+Caller A holds trusted data and wants zero-cost construction. Caller B holds untrusted data and needs validation. One constructor cannot serve both safely. The escape-hatch pattern resolves this:
+
+```cpp
+// Safe: scans [str, str+len] for the first null.
+// Postcondition: data()[size()] == '\0',
+//   no interior nulls.
+constexpr cstring_view(const charT* str,
+    size_type len);
+
+// Escape hatch: O(1), no scan.
+// Precondition: str[len] == '\0', no interior nulls.
+static constexpr cstring_view unsafe(
+    const charT* str, size_type len) noexcept;
+```
+
+The safe constructor scans. The cost is O(n). The `unsafe` factory trusts the caller and pays nothing. This is the same pattern as `pct_string_view` and `make_pct_string_view_unsafe` from Section 3 - safe by default, explicit opt-in at trusted boundaries.
+
+C++ earns its reputation as a zero-cost abstraction language by letting programmers pay only for what they use. A type that validates on every construction - with no way to bypass validation at a trusted boundary - imposes cost the programmer cannot eliminate. The `unsafe` factory preserves this principle.
+
+The choice of the name `unsafe` is deliberate. It mirrors the Rust keyword, where `unsafe` marks the boundary at which the programmer takes responsibility for invariants the language normally enforces. `cstring_view::unsafe` marks the same kind of boundary: the caller asserts null-termination that the constructor normally verifies. The cross-language resonance makes the API legible to developers familiar with either language.
+
+P3655R3 also provides a templated constructor from an iterator pair:
+
+```cpp
+template<class It, class End>
+constexpr basic_cstring_view(It begin, End end);
+```
+
+The contract requires `*(begin + (end - begin)) == '\0'` - the iterator at position `end` must be dereferenceable. This breaks the standard C++ convention that `end` is past-the-end and not dereferenceable. Under a wide-contract model, three options present themselves:
+
+- **A.** Require `[begin, end]` readable (inclusive), scan for the first null. Same model as the pointer-and-length constructor.
+- **B.** Require only `[begin, end)` readable, scan the half-open range for the first null.
+- **C.** Remove the constructor. No demonstrated use case requires it that the pointer-and-length constructor does not already serve. Real-world `cstring_view` usage originates from `const char*` (C APIs, OS calls, string literals) or from `std::string` (implicit conversion). Ship the type without this constructor; add it later when evidence of need emerges.
+
+## 7. Conclusion
 
 The standard library already provides constrained defaults with explicit broader counterparts. Production libraries independently converge on the same pattern for trusted boundaries. The same principle governs concurrency structure. This paper asks for no wording and no poll. It asks the committee to recognize a design value: safe by default, with explicit escape hatches where zero-cost composition requires them.
 
@@ -119,7 +193,7 @@ How explicit escape hatches interact with Hardening, Contracts, and Erroneous Be
 
 # Acknowledgements
 
-The author thanks Jonathan Wakely, Jan Schultke, Pablo Halpern, and Nevin Liber for discussion and feedback on safe and unsafe construction paths.
+The author thanks Jonathan Wakely, Jan Schultke, Pablo Halpern, and Nevin Liber for discussion and feedback on safe and unsafe construction paths. The author thanks Peter Bindels, Hana Dusikova, Jeremy Rifkin, Marco Foco, and Alexey Shevlyakov for their work on `cstring_view`.
 
 ---
 
@@ -142,3 +216,5 @@ The author thanks Jonathan Wakely, Jan Schultke, Pablo Halpern, and Nevin Liber 
 [8] The Open Group Base Specifications Issue 8, https://pubs.opengroup.org/onlinepubs/9799919799/
 
 [9] Capy, https://github.com/cppalliance/capy
+
+[10] P3655R3, "cstring_view," Peter Bindels, Hana Dusikova, Jeremy Rifkin, Marco Foco, Alexey Shevlyakov, https://wg21.link/p3655r3
