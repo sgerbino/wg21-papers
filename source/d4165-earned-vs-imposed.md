@@ -154,9 +154,9 @@ If the economic findings in Section 3 apply to software library development, the
 
 This section collects data from the C++ ecosystem and examines each prediction against the public record. The data sources are WG21 papers, committee meeting minutes, Boost mailing list archives, published benchmarks, and public statements by committee participants. Every quotation is attributed with date and source.
 
-### 5.1 Observation 1: The Knowledge Problem
+### 5.1 Observation 1
 
-Prediction 1 stated that Model A libraries should more accurately reflect the needs of the broader user community than Model B libraries, because Model A aggregates information from a larger population.
+Prediction 1 stated that Model A libraries should more accurately reflect the needs of the broader user community than Model B libraries.
 
 Christopher Kohlhoff is an individual developer with no corporate sponsor. He wrote Boost.Asio and has maintained it for over twenty years. The library has millions of deployed users across every major platform. It formed the basis of the Networking TS<sup>[15]</sup>. The Networking TS has not been standardized.
 
@@ -172,13 +172,19 @@ The C++ JSON ecosystem contains five competing libraries, each serving a differe
 | Boost.JSON    | ~308 MB/s        | Modern, balanced          |
 | nlohmann/json | ~81 MB/s         | Developer ergonomics      |
 
-No committee designed this ecosystem. Five independent authors identified five different user needs and built five different libraries. Users choose among them based on their own requirements. The distributed knowledge of millions of users produced five specialized solutions.
+No committee designed this ecosystem. Five independent authors identified five different user needs and built five different libraries. Users choose among them based on their own requirements. The distributed knowledge of millions of users produced five specialized solutions. One committee-designed JSON library would serve one of those needs.
 
-Prediction 1 stated that Model A should more accurately reflect the needs of the broader community. Boost.Asio has millions of users. The Graph Library has none. The JSON ecosystem has five libraries because users have five different needs. One committee-designed JSON library would serve one of those needs.
+### 5.2 Observation 2
 
-### 5.2 Observation 2: The Calculation Problem
+Prediction 1 stated that Model A should aggregate information from a larger population through adoption signals.
 
-Prediction 2 stated that Model B's evaluation process should substitute procedural compliance for outcome measurement, because the outcome metric - user adoption - is structurally unavailable.
+Victor Zverovich published the `{fmt}` library on GitHub in December 2012<sup>[33]</sup>. Over eight years of marketplace competition, the library earned 23,375 stars, 2,852 forks, and 440 contributors. It was adopted by Meta (Folly), among other production codebases. The committee recognized the marketplace's verdict and standardized the design as `std::format` in C++20 ([P0645](https://wg21.link/p0645))<sup>[34]</sup> and `std::print` in C++23 ([P2093R14](https://wg21.link/p2093r14))<sup>[35]</sup>.
+
+The marketplace identified what C++ developers needed. The committee adopted the marketplace's output. This is the founding principle working as designed: existing practice was standardized. The committee did not need to invent a formatting library. The marketplace delivered one, the community validated it through adoption, and the committee consolidated the result.
+
+### 5.3 Observation 3
+
+Prediction 2 stated that Model B's evaluation process should substitute procedural compliance for outcome measurement.
 
 [P2274R0](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/p2274r0.pdf)<sup>[18]</sup> (Aaron Ballman, 2020), a document describing WG21's procedures to WG14 members, states: "WG21 finds implementation experience with a proposal to be incredibly valuable but does not have any requirement on implementation experience to adopt a proposal."
 
@@ -186,11 +192,26 @@ The committee's own documentation confirms the absence of an outcome metric. A l
 
 Howard Hinnant, writing on the library reflector in July 2016<sup>[19]</sup>, described the metric that Model B lacks: "I should quit asking: 'Has it been implemented?' The correct question is: What has been the field experience? Is there positive feedback from anyone outside your immediate family or people who could have a perceived conflict of interest (such as employees of your company)?"
 
-In the Boost review process, the review manager evaluates a library against a different metric: does it work, do users want it, is it well-designed, does it have tests, does it have documentation, has it been used<sup>[4]</sup>? Hartmut Kaiser characterized the volunteer review process on the Boost mailing list in 2017<sup>[20]</sup>: "Having the review process being volunteer-driven guarantees a) a real-world need for the library under review, b) fairness of the decision, c) a high quality of the review, d) direct interest in organizing the review by the review manager."
+Hartmut Kaiser characterized the Boost volunteer review process on the Boost mailing list in 2017<sup>[20]</sup>: "Having the review process being volunteer-driven guarantees a) a real-world need for the library under review, b) fairness of the decision, c) a high quality of the review, d) direct interest in organizing the review by the review manager."
 
-Prediction 2 stated that Model B should substitute procedural compliance for outcome measurement. P2274R0 confirms the absence of the outcome metric. The Boost review process uses the outcome metric. Both facts are in the public record.
+### 5.4 Observation 4
 
-### 5.3 Observation 3: Creative Destruction
+Prediction 2 stated that Model A's evaluation should be dominated by outcomes.
+
+[N3370](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2012/n3370.html)<sup>[36]</sup> (Alisdair Meredith, "Call for Library Proposals," 2012) lists what WG21 asks of library proposers: design decisions, technical specifications, impact on the standard, interaction with other proposals, and proposed wording. A Boost formal review asks different questions: does the library compile on all supported platforms, does it have tests, is the documentation adequate, has anyone used it, would the reviewer use it, and does it meet a real-world need<sup>[4]</sup>.
+
+| Evaluated Property          | Model A (Boost Review)    | Model B (WG21 Process)       |
+| --------------------------- | ------------------------- | ---------------------------- |
+| Has it been used?           | Required                  | Not required<sup>[18]</sup>  |
+| Do independent users exist? | Expected                  | Not required<sup>[18]</sup>  |
+| Does it compile everywhere? | Tested on CI              | Not required before LEWG     |
+| Is the documentation good?  | Evaluated by reviewers    | Not a formal criterion       |
+| Does it meet a real need?   | Central question          | Implicit in design rationale |
+| Is the wording correct?     | Not applicable            | Central question             |
+
+One rubric measures whether the library works for users. The other measures whether the paper is ready for the standard.
+
+### 5.5 Observation 5
 
 Prediction 3 stated that under Model A, defective libraries should be superseded by better alternatives, and under Model B, defective libraries should persist.
 
@@ -204,21 +225,39 @@ Prediction 3 stated that under Model A, defective libraries should be superseded
 
 **`std::error_code` and `boost::error_code`.** Niall Douglas wrote on the Boost mailing list in November 2023<sup>[23]</sup>: "Boost's `shared_ptr` is less footgunny than `std::shared_ptr`. [...] `boost::error_code` over the fundamentally unsafe `std::error_code`." He characterized the pattern: "I think that as WG21's increasing dysfunction at standardising library becomes more obvious to the C++ ecosystem, the need for fixed standard library facilities will grow because the standardised ones will become toxic to use in newly written code."
 
-Prediction 3 stated that defective libraries should persist under Model B and be displaced under Model A. `std::variant`, `std::regex`, `std::unordered_map`, and `std::error_code` were standardized and remain in the standard. `boost::variant2`, Boost.Regex, `boost::unordered_flat_map`, and `boost::error_code` are available as alternatives in the marketplace.
+`std::variant`, `std::regex`, `std::unordered_map`, and `std::error_code` were standardized and remain in the standard. `boost::variant2`, Boost.Regex, `boost::unordered_flat_map`, and `boost::error_code` are available as alternatives in the marketplace.
 
-### 5.4 Observation 4: Collective Action
+### 5.6 Observation 6
 
-Prediction 4 stated that under Model B, proposals backed by concentrated organizational resources should advance faster than proposals backed by diffuse community effort, independent of technical maturity.
+Prediction 3 stated that where competition is absent, inferior products persist.
+
+`std::filesystem` was standardized in C++17 based on Boost.Filesystem. The standard version is frozen at the C++17 specification. Boost.Filesystem Version 4 was released afterward with breaking changes to improve the design<sup>[37]</sup>. Subsequent releases added `fdopendir`/`openat` support for resilience to concurrent filesystem modifications (1.85.0), storage preallocation in `copy_file` to reduce fragmentation on Linux (1.85.0), and continued platform-specific improvements through 1.91.0<sup>[37]</sup>. The marketplace version iterates. The standard version persists unchanged.
+
+Daniel Lemire documented `std::ranges` performance degradation in October 2025<sup>[38]</sup>. Trimming whitespace from strings using chained views (`drop_while`, `reverse`, `drop_while`, `reverse`) produced 70 instructions per string on GCC 15 versus 24 for a simple imperative loop. Engineers at a C++ company observed measurable performance degradation after switching to `std::ranges`. The simdjson project limited `std::ranges` support because it caused performance loss<sup>[38]</sup>. In the marketplace, developers choose the imperative alternative. In the standard, the design persists regardless of the performance evidence.
+
+### 5.7 Observation 7
+
+Prediction 4 stated that under Model B, proposals backed by concentrated organizational resources should advance faster than proposals backed by diffuse community effort.
 
 Stackless coroutines were proposed by Gor Nishanov at Microsoft. Microsoft provided experimental Visual Studio support in 2013, before formal committee approval. The proposal progressed from initial paper to C++20 standardization in approximately six years<sup>[26]</sup>.
 
 Stackful coroutines were proposed by Oliver Kowalke and Nat Goodspeed, community developers without comparable corporate backing. P0876 reached 19 revisions over twelve years and remains in a "needs-revision" state. Stackful coroutines are not in the C++26 working draft<sup>[26]</sup>.
 
-Both coroutine models are well-understood. Both have multiple implementations. Both serve real use cases. The timeline difference is twelve years versus six.
+Both coroutine models are well-understood. Both have multiple implementations. Both serve real use cases. One proposal had Microsoft. The other had two community developers. The timeline difference is twelve years versus six.
 
-Prediction 4 stated that concentrated organizational resources should predict advancement speed independent of technical maturity. One proposal had Microsoft. The other had two community developers. The timelines are in the public record.
+### 5.8 Observation 8
 
-### 5.5 Observation 5: Feedback Mechanism
+Prediction 4 stated that concentrated organizational resources should predict advancement speed independent of technical maturity.
+
+[P2469R0](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2469r0.pdf)<sup>[39]</sup> (Kohlhoff, Allsop, Falco, Hodges, Morgenstern, October 2021) states: "The asynchronous model of Asio/Net.TS has evolved to support new use cases while also being careful not to leave existing use cases behind, and the strength of the composition model is testament to that. The model is the result of growth and adaptation from use in the real world, and is one reason it is so widely deployed."
+
+The Networking TS was based on Boost.Asio - the most deployed asynchronous library in C++, with decades of field experience, multiple continuation styles (callbacks, futures, coroutines, fibers, deferred, detached), and production deployment at many companies<sup>[39]</sup>. `std::execution` ([P2300R10](https://wg21.link/p2300r10))<sup>[40]</sup> was authored primarily by delegates from NVIDIA, Meta, and other major corporations with significant committee presence. SG4 polled at Kona (November 2023) that networking should use only a sender/receiver model.
+
+P2469R0 observed: "the proposed solution in P2300 forces a single composition mechanism, one for which we have limited field experience, on every user."
+
+The most-deployed async library in C++ was set aside in favor of a framework backed by concentrated institutional resources. Both decisions are in the public record.
+
+### 5.9 Observation 9
 
 Prediction 5 stated that Model A's feedback mechanism should produce faster quality iteration than Model B's feedback mechanism.
 
@@ -230,11 +269,17 @@ Bryce Adelstein Lelbach stated in the same minutes<sup>[28]</sup>: "the amount o
 
 Arno Schoedl, CTO of think-cell GmbH, wrote on the Boost mailing list on May 9, 2024<sup>[29]</sup>: "Some recent additions to the standard made questionable design choices, which if a library had been implemented and widely used prior to standardization like in Boost, design choices may have been made differently."
 
-The Boost feedback cycle is: submit, review, reject or accept with conditions, revise, re-review. The cycle time is months. The WG21 feedback cycle is: propose, advance through study groups, vote at plenary, ship in a standard on a three-year cadence. Once shipped, ABI constraints prevent structural revision.
+The Boost feedback cycle is: submit, review, reject or accept with conditions, revise, re-review. The cycle time is months. The WG21 feedback cycle is: propose, advance through study groups, vote at plenary, ship in a standard on a three-year cadence. Once shipped, ABI constraints prevent structural revision. Boost.Serialization was rejected, revised, and accepted. `std::variant` was standardized without the field experience Howard Hinnant requested, and the defect persists.
 
-Prediction 5 stated that Model A should produce faster quality iteration. Boost.Serialization was rejected, revised, and accepted. `std::variant` was standardized without the field experience Howard Hinnant requested, and the defect persists.
+### 5.10 Observation 10
 
-### 5.6 Observation 6: Representation
+Prediction 5 stated that Model A's feedback mechanism - users choosing alternatives - should produce faster quality iteration.
+
+`{fmt}` and `std::format` share the same core design and the same original author. The marketplace version has shipped 57 releases since 2012, each incorporating user feedback, performance improvements, and new features<sup>[33]</sup>. The standard version ships on a three-year cadence and is constrained by ABI stability. The `{fmt}` documentation states it is faster than `(s)printf`, `std::to_chars`, `to_string`, and `std::ostringstream`<sup>[33]</sup>.
+
+Same design. Same author. Different feedback loops. After thirteen years, `{fmt}` is on release 57. `std::format` has been revised in one standard cycle.
+
+### 5.11 Observation 11
 
 Prediction 6 stated that Model B's output should increasingly reflect the priorities of entities with the most institutional representation.
 
@@ -242,15 +287,29 @@ The committee's own founding document (1990) stated the principle: "The key idea
 
 The quality bar between the two models has inverted. The author wrote on the Boost mailing list in December 2023<sup>[30]</sup>: "As authors have discovered that the bar of quality for standardization is considerably lower than that required for inclusion in the Boost library collection, Boost is no longer seen as a waypoint along the journey to standardization."
 
-Bryce Adelstein Lelbach stated at CppNow 2021<sup>[31]</sup> that other C++ libraries "can be quickly developed and distributed... the C++ standard library does not have that luxury." He observed that the standard library "does not have that luxury" because it must support every platform, every use case, and every user. The constraint is real. The consequence is that the committee's library output is shaped by what the committee can evaluate - which is bounded by the delegates in the room.
+Bryce Adelstein Lelbach stated at CppNow 2021<sup>[31]</sup> that other C++ libraries "can be quickly developed and distributed... the C++ standard library does not have that luxury." The constraint is real. The consequence is that the committee's library output is shaped by what the committee can evaluate - which is bounded by the delegates in the room.
 
-Prediction 6 stated that Model B's output should reflect the priorities of entities with the most institutional representation. The founding principle was "existing practice." The current practice is committee-led innovation. The shift is documented by the committee's own participants.
+### 5.12 Observation 12
+
+Prediction 6 stated that over time, Model B's output should increasingly reflect the priorities of entities with the most institutional representation rather than the broader user community.
+
+The following table traces where each major library addition originated.
+
+| Standard  | Model A Origin (Marketplace)                                                | Model B Origin (Committee)                       |
+| --------- | --------------------------------------------------------------------------- | ------------------------------------------------ |
+| TR1/C++11 | `shared_ptr`, `function`, `bind`, `regex`, `random`, `filesystem`, `chrono` |                                                  |
+| C++17     | `optional`, `variant`, `any`, `string_view`, `filesystem`                   | parallel algorithms                              |
+| C++20     | `format` (fmt), `ranges` (range-v3, modified)                               | concepts, modules, coroutines, `consteval`       |
+| C++23     | `flat_map`, `stacktrace`, `print` (fmt)                                     | `expected`, `mdspan`, `generator`                |
+| C++26     |                                                                             | `std::execution`, contracts, reflection          |
+
+In the TR1 era, nearly every library addition originated from marketplace-tested code. By C++26, the committee's library output is predominantly committee-originated. The founding principle was "existing practice." The table documents the trajectory.
 
 ---
 
 ## 6. The Record
 
-Two models of library development are observable in the C++ ecosystem. Section 2 described their properties. Section 3 presented seven findings from the economic literature on centralized allocation and competitive markets. Section 4 derived six predictions from those findings. Section 5 examined real C++ libraries from both models and documented what was observed.
+Two models of library development are observable in the C++ ecosystem. Section 2 described their properties. Section 3 presented seven findings from the economic literature on centralized allocation and competitive markets. Section 4 derived six predictions from those findings. Section 5 tested each prediction twice - twelve observations drawn from real C++ libraries, committee documents, marketplace data, and the public statements of committee participants.
 
 The predictions and the observations are in the preceding sections. The correspondence between them is the reader's to evaluate.
 
@@ -329,3 +388,19 @@ The authors thank Adam Smith, Friedrich Hayek, Ludwig von Mises, Joseph Schumpet
 31. Bryce Adelstein Lelbach. "What Belongs In The C++ Standard Library." C++Now 2021. https://www.youtube.com/watch?v=DhOI3eBMWyo
 
 32. [P4046R0](https://wg21.link/p4046r0). Vinnie Falco. "SAGE: Saving All Gathered Expertise." 2026. https://wg21.link/p4046r0
+
+33. [{fmt}](https://github.com/fmtlib/fmt). Victor Zverovich. A modern formatting library. https://github.com/fmtlib/fmt
+
+34. [P0645R10](https://wg21.link/p0645r10). Victor Zverovich. "Text Formatting." https://wg21.link/p0645r10
+
+35. [P2093R14](https://wg21.link/p2093r14). Victor Zverovich. "Formatted output." 2022. https://wg21.link/p2093r14
+
+36. [N3370](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2012/n3370.html). Alisdair Meredith. "Call for Library Proposals." 2012. https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2012/n3370.html
+
+37. [Boost.Filesystem Release History](https://www.boost.org/doc/libs/1_86_0/libs/filesystem/doc/release_history.html). Andrey Semashev. https://www.boost.org/doc/libs/1_86_0/libs/filesystem/doc/release_history.html
+
+38. Daniel Lemire. "std::ranges may not deliver the performance that you expect." October 2025. https://lemire.me/blog/2025/10/05/stdranges-may-not-deliver-the-performance-that-you-expect/
+
+39. [P2469R0](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2469r0.pdf). Christopher Kohlhoff, Jamie Allsop, Vinnie Falco, Richard Hodges, Klemens Morgenstern. "Response to P2464: The Networking TS is baked, P2300 Sender/Receiver is not." 2021. https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2469r0.pdf
+
+40. [P2300R10](https://wg21.link/p2300r10). Micha&lstrok; Dominiak, et al. "std::execution." 2024. https://wg21.link/p2300r10
