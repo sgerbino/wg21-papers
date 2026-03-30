@@ -1,5 +1,5 @@
 ---
-title: "Symmetric Transfer and Sender Composition"
+title: "Info: Symmetric Transfer and Sender Composition"
 document: P2583R3
 date: 2026-03-10
 reply-to:
@@ -42,13 +42,23 @@ C++20 provides symmetric transfer ([P0913R1](https://wg21.link/p0913r1)<sup>[1]<
 
 ## 1. Disclosure
 
+The author provides information and serves at the pleasure of the committee.
+
+This paper is part of the Network Endeavor, a project to bring coroutine-native byte-oriented I/O to C++.
+
+The author developed and maintains [Capy](https://github.com/cppalliance/capy) and [Corosio](https://github.com/cppalliance/corosio) and believes coroutine-native I/O is the correct foundation for networking in C++.
+
+Coroutine-native I/O and `std::execution` address different domains and should coexist in the C++ standard.
+
+This paper uses AI. The proposed wording in Section 15 was generated with AI assistance and has not been verified against the full specification by the authors.
+
 The authors developed [P4003R0](https://wg21.link/p4003r0)<sup>[3]</sup> ("Coroutines for I/O") and [P4007R0](https://wg21.link/p4007r0)<sup>[4]</sup> ("Senders and Coroutines"). A coroutine-only design cannot express compile-time work graphs, does not support heterogeneous dispatch, and assumes a cooperative runtime. Those are real costs. We do not claim coroutines are the answer to all problems. The limitation documented here exists independently of any alternative design.
 
 [P4007R0](https://wg21.link/p4007r0)<sup>[4]</sup> documents three costs at the boundary where the sender model meets coroutines: error reporting, error returns, and frame allocator propagation. Each is an interface mismatch. This paper documents a cost inside the composition mechanism. Sender algorithms are structs. The completion protocol is void-returning. These are not boundary properties. They are what sender algorithms are.
 
-This revision adds draft proposed wording (Section 15) for the protocol-level fix described in Section 11, motivated by NB comment US 246-373 ([#948](https://github.com/cplusplus/nbballot/issues/948), LWG4348)<sup>[17]</sup>. The wording was generated with AI assistance and has not been verified against the full specification by the authors. It is offered as a starting point for the [P2300R10](https://wg21.link/p2300r10)<sup>[5]</sup> and [P3552R3](https://wg21.link/p3552r3)<sup>[2]</sup> authors, not as a finished product. This wording changes sections introduced by both papers. We do not claim this wording is correct. We claim the direction is worth exploring.
+The wording is offered as a starting point for the [P2300R10](https://wg21.link/p2300r10)<sup>[5]</sup> and [P3552R3](https://wg21.link/p3552r3)<sup>[2]</sup> authors, not as a finished product. This wording changes sections introduced by both papers. We do not claim this wording is correct. We claim the direction is worth exploring. The concept-level and CPO-level changes follow directly from the mechanism in Section 11 and are the most straightforward. The coroutine bridge changes (`sender-awaitable`, `awaitable-receiver`) are drafted from the working draft text. Algorithm-specific and task-specific changes are described in prose rather than specification text, because each algorithm has its own internal state machine that the authors have not traced through the working draft. The wording has not been tested against an implementation. Two open questions requiring LWG expertise are identified in Section 15.1.
 
-The concept-level and CPO-level changes follow directly from the mechanism in Section 11 and are the most straightforward. The coroutine bridge changes (`sender-awaitable`, `awaitable-receiver`) are drafted from the working draft text. Algorithm-specific and task-specific changes are described in prose rather than specification text, because each algorithm has its own internal state machine that the authors have not traced through the working draft. The wording has not been tested against an implementation. Two open questions requiring LWG expertise are identified in Section 15.1.
+This paper asks for nothing.
 
 ---
 

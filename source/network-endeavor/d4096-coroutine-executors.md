@@ -1,5 +1,5 @@
 ---
-title: "Retrospective: Coroutine Executors and P2464R0"
+title: "History: Coroutine Executors and P2464R0"
 document: P4096R0
 date: 2026-03-14
 reply-to:
@@ -14,7 +14,7 @@ The committee set aside the Networking TS in 2021. The process had no mechanism 
 
 [P2464R0](https://wg21.link/p2464r0)<sup>[1]</sup>, "Ruminations on networking and executors," identified three deficiencies in [P0443R14](https://wg21.link/p0443r14)<sup>[3]</sup>'s `execute(F&&)` - no error channel, no lifecycle for submitted work, and no generic composition - and concluded the Networking TS should be set aside. The committee acted on the analysis. The Networking TS was removed from the committee's work program.
 
-This retrospective examines the analysis under both framings of `execute(F&&)` defined in [P4094R0](https://wg21.link/p4094r0)<sup>[7]</sup>, "Retrospective: The Unification of Executors and P0443" - the work framing and the continuation framing. Under the work framing, the three deficiencies hold. Under the continuation framing, they do not arise. [P2464R0](https://wg21.link/p2464r0)<sup>[1]</sup> analyzed under the work framing only. The coroutine executor described in [P4003R0](https://wg21.link/p4003r0)<sup>[2]</sup>, "Coroutines for I/O," constrains the argument type to `coroutine_handle<>`, enforcing the continuation framing through the type system. The coroutine executor concept did not exist in 2021. [P2464R0](https://wg21.link/p2464r0)<sup>[1]</sup> could not have evaluated it.
+This retrospective examines the analysis under both framings of `execute(F&&)` defined in [P4094R0](https://wg21.link/p4094r0)<sup>[7]</sup> - the work framing and the continuation framing. Under the work framing, the three deficiencies hold. Under the continuation framing, they do not arise. [P2464R0](https://wg21.link/p2464r0)<sup>[1]</sup> analyzed under the work framing only. The coroutine executor described in [P4003R0](https://wg21.link/p4003r0)<sup>[2]</sup> constrains the argument type to `coroutine_handle<>`, enforcing the continuation framing through the type system. The coroutine executor concept did not exist in 2021. [P2464R0](https://wg21.link/p2464r0)<sup>[1]</sup> could not have evaluated it.
 
 Section 2 documents what [P2464R0](https://wg21.link/p2464r0)<sup>[1]</sup> did and what followed. Sections 3-4 apply both framings to the three criteria. Section 5 places the analysis next to the published outcomes since 2021.
 
@@ -28,21 +28,21 @@ Section 2 documents what [P2464R0](https://wg21.link/p2464r0)<sup>[1]</sup> did 
 
 ## 1. Disclosure
 
-This paper is part of the Network Endeavor ([P4100R0](https://wg21.link/p4100r0)<sup>[18]</sup>), a thirteen-paper project to bring networking to C++29 using a coroutine-native approach. The authors developed and maintain [Corosio](https://github.com/cppalliance/corosio)<sup>[5]</sup> and [Capy](https://github.com/cppalliance/capy)<sup>[4]</sup> and believe coroutine-native I/O is the correct foundation for networking in C++. The authors provide information, ask nothing, and serve at the pleasure of the chair.
+The author provides information and serves at the pleasure of the committee.
 
-The committee has been trying to standardize networking since 2005. The retrospective examines the published record to identify the failure modes that prevented delivery, so the next attempt can avoid them. Its findings stand on their own. That effort requires re-examining consequential papers, including papers written by people the authors respect.
+This paper is part of the Network Endeavor, a project to bring coroutine-native byte-oriented I/O to C++.
 
-### P2464R0
+The author developed and maintains [Capy](https://github.com/cppalliance/capy)<sup>[4]</sup> and [Corosio](https://github.com/cppalliance/corosio)<sup>[5]</sup> and believes coroutine-native I/O is the correct foundation for networking in C++.
+
+Coroutine-native I/O and `std::execution` address different domains and should coexist in the C++ standard.
+
+This paper examines the published record. That effort requires re-examining consequential papers, including papers written by people the author respects.
 
 [P2464R0](https://wg21.link/p2464r0)<sup>[1]</sup> was consequential. It provided the analytical framework that led the committee to set aside the Networking TS and focus on the sender/receiver model. Decisions of that magnitude deserve periodic review. This paper provides one.
 
-### P2300R10
-
 [P2464R0](https://wg21.link/p2464r0)<sup>[1]</sup> critiqued [P0443R14](https://wg21.link/p0443r14)<sup>[3]</sup>. [P2300R10](https://wg21.link/p2300r10)<sup>[6]</sup>, "std::execution," addressed those deficiencies with the sender/receiver model. [P4003R0](https://wg21.link/p4003r0)<sup>[2]</sup> provides a second async model. The committee now has two implementations to evaluate against [P2464R0](https://wg21.link/p2464r0)<sup>[1]</sup>'s criteria. This paper evaluates [P4003R0](https://wg21.link/p4003r0)<sup>[2]</sup> and uses [P2300R10](https://wg21.link/p2300r10)<sup>[6]</sup> as a reference. Structural comparisons are observations, not arguments that `std::execution` should be modified or removed.
 
-### The Networking TS
-
-The authors co-authored [P2469R0](https://wg21.link/p2469r0)<sup>[16]</sup>, "Response to P2464 - Ruminations on networking and executors," defending the Networking TS in 2021 and built Boost.Beast on Boost.Asio's completion-token model. That history makes the following statement necessary: the authors no longer believe the Networking TS would have been right for C++. The committee's conclusion was correct. This paper disagrees with the analytical path, not the destination. There is no attempt to relitigate the Networking TS or to restore it to the committee's work program.
+The authors co-authored [P2469R0](https://wg21.link/p2469r0)<sup>[15]</sup>, "Response to P2464 - Ruminations on networking and executors," defending the Networking TS in 2021 and built Boost.Beast on Boost.Asio's completion-token model. That history makes the following statement necessary: the authors no longer believe the Networking TS would have been right for C++. The committee's conclusion was correct. This paper disagrees with the analytical path, not the destination. There is no attempt to relitigate the Networking TS or to restore it to the committee's work program.
 
 The research that produced [P4003R0](https://wg21.link/p4003r0)<sup>[2]</sup> is what changed the authors' position. The Networking TS completion token is a generalization: any callable, any future, any coroutine, any continuation type can serve as the async resumption mechanism. That generality is real and it works. But it is a trade-off. Three async models now exist for C++, each making a different trade-off:
 
@@ -50,7 +50,9 @@ The research that produced [P4003R0](https://wg21.link/p4003r0)<sup>[2]</sup> is
 - The Networking TS trades a single async model for support of every continuation type.
 - [P4003R0](https://wg21.link/p4003r0)<sup>[2]</sup> trades every continuation type for coroutines only.
 
-Each is a valid choice with real benefits and real costs. The coroutines-only trade-off is the one the authors believe is correct for networking in C++. When the completion mechanism is fixed to `coroutine_handle<>`, the operation state becomes concrete, the stream becomes type-erasable without per-operation allocation, the I/O library compiles once, and the ABI stabilizes across transport changes. None of these properties are achievable when the operation state must be parameterized on an arbitrary completion handler type. [P4088R0](https://wg21.link/p4088r0)<sup>[17]</sup>, "The Case for Coroutines," traces the full causal chain. The generality that the completion token provides is genuine, but the cost is that it forecloses the optimizations that networking in C++ has needed for twenty years. Constraining to coroutines is the trade-off that unlocks them.
+Each is a valid choice with real benefits and real costs. The coroutines-only trade-off is the one the authors believe is correct for networking in C++. When the completion mechanism is fixed to `coroutine_handle<>`, the operation state becomes concrete, the stream becomes type-erasable without per-operation allocation, the I/O library compiles once, and the ABI stabilizes across transport changes. None of these properties are achievable when the operation state must be parameterized on an arbitrary completion handler type. [P4088R0](https://wg21.link/p4088r0)<sup>[16]</sup>, "The Case for Coroutines," traces the full causal chain. The generality that the completion token provides is genuine, but the cost is that it forecloses the optimizations that networking in C++ has needed for twenty years. Constraining to coroutines is the trade-off that unlocks them.
+
+This paper asks for nothing.
 
 ---
 
@@ -283,8 +285,6 @@ What the process did not check - what it has no mechanism to check - is whether 
 
 The process also had no mechanism to check outcomes. No revisit trigger was set. No follow-up criteria were established. The committee acted on the analysis in 2021. The prediction that [P2300](https://wg21.link/p2300)<sup>[6]</sup> would replace the Networking TS for networking was not revisited against evidence. No sender-based networking has shipped.
 
-[P4050R0](https://wg21.link/p4050r0)<sup>[15]</sup>, "Failure Modes in Large-Scale Standardization," generalizes this pattern. Failure mode D4: design limitations attributed to the problem domain - the three deficiencies are properties of the `execute(F&&)` API surface under one framing, not inherent properties of executor-based async. Failure mode A4: predictions without follow-up - the committee acted on a prediction and never checked whether the prediction held. The failure modes and the proposed remedies are documented in [P4050R0](https://wg21.link/p4050r0)<sup>[15]</sup>. This paper documents the specific instance.
-
 Voutilainen analyzed what was in front of him, and what was in front of him was all the specification provided. The continuation framing had been erased from the API surface by the terminology shift documented in [P4094R0](https://wg21.link/p4094r0)<sup>[7]</sup>. The coroutine executor concept did not exist. The process gave him no reason to look elsewhere and no mechanism to revisit the outcome.
 
 ### 5.4 Summary
@@ -336,10 +336,8 @@ The authors thank Peter Dimov for identifying that [P0443R14](https://wg21.link/
 
 14. [N1925](https://wg21.link/n1925) - "A Proposal to Add Networking Utilities to the C++ Standard Library" (Chris Kohlhoff, 2005). https://wg21.link/n1925
 
-15. [P4050R0](https://wg21.link/p4050r0) - "Failure Modes in Large-Scale Standardization" (Vinnie Falco, 2026). https://wg21.link/p4050r0
+15. [P2469R0](https://wg21.link/p2469r0) - "Response to P2464 - Ruminations on networking and executors" (Vinnie Falco, Christopher Kohlhoff, 2021). https://wg21.link/p2469r0
 
-16. [P2469R0](https://wg21.link/p2469r0) - "Response to P2464 - Ruminations on networking and executors" (Vinnie Falco, Christopher Kohlhoff, 2021). https://wg21.link/p2469r0
+16. [P4088R0](https://wg21.link/p4088r0) - "The Case for Coroutines" (Vinnie Falco, 2026). https://wg21.link/p4088r0
 
-17. [P4088R0](https://wg21.link/p4088r0) - "The Case for Coroutines" (Vinnie Falco, 2026). https://wg21.link/p4088r0
-
-18. [P4100R0](https://wg21.link/p4100r0) - "The Network Endeavor: Coroutine-Native I/O for C++29" (Vinnie Falco, Steve Gerbino, Michael Vandeberg, Mungo Gill, Mohammad Nejati, 2026). https://wg21.link/p4100r0
+17. [P4100R0](https://wg21.link/p4100r0) - "The Network Endeavor: Coroutine-Native I/O for C++29" (Vinnie Falco, Steve Gerbino, Michael Vandeberg, Mungo Gill, Mohammad Nejati, 2026). https://wg21.link/p4100r0

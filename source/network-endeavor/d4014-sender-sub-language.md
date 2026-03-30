@@ -10,9 +10,9 @@ audience: LEWG
 
 ## Abstract
 
-C++26 ships thirty sender algorithms that collectively replace sequential statements, local variables, error handling, and iteration with library-level equivalents rooted in continuation-passing style.
+Reading this tutorial will teach you how each of the thirty sender algorithms work, plus how to use the new `std::execution::task` type in C++26.
 
-This paper is a progressive tutorial. It introduces every sender algorithm in C++26<sup>[1]</sup>, one at a time, from the simplest to the most complex. Each algorithm is defined, demonstrated in a working example, and explained. After the explanation, the equivalent C++ program appears without commentary - the equivalents compute the same results but do not preserve concurrency or execution context semantics. The theoretical foundations are presented first - the lambda calculus, continuation-passing style, and monadic composition that give the Sub-Language its structure - followed by the algorithms themselves, grouped by function and ordered by escalating complexity. The final sections cover the `task` coroutine type ([P3552R3](https://wg21.link/p3552r3))<sup>[2]</sup> and the composition patterns that emerge when senders and coroutines interleave.
+This paper is a progressive tutorial. It introduces every sender algorithm in C++26<sup>[1]</sup>, one at a time, from the simplest to the most complex. Each algorithm is defined, demonstrated in a working example, and explained. After the explanation, the equivalent C++ program appears without commentary - the equivalents compute the same results but do not preserve concurrency or execution context semantics. The theoretical foundations are presented first - the lambda calculus, continuation-passing style, and monadic composition that give the Sub-Language its structure - followed by the algorithms themselves, grouped by function and ordered by escalating complexity. The final sections cover the `task` coroutine type ([P3552R3](https://wg21.link/p3552r3), "Add a Coroutine Task Type")<sup>[2]</sup> and the composition patterns that emerge when senders and coroutines interleave.
 
 The author dedicates all original content in this paper to the public domain under [CC0 1.0 Universal](https://creativecommons.org/publicdomain/zero/1.0/). It may be freely reused as the basis of tutorials, documentation, and other teaching materials.
 
@@ -37,19 +37,15 @@ The author dedicates all original content in this paper to the public domain und
 
 The author provides information and serves at the pleasure of the committee.
 
-The author maintains [Boost.Beast](https://github.com/boostorg/beast)<sup>[3]</sup>, [Corosio](https://github.com/cppalliance/corosio)<sup>[4]</sup>, and [Capy](https://github.com/cppalliance/capy)<sup>[5]</sup>.
+This paper is part of the [Network Endeavor](https://wg21.link/p4100r0) ([P4100R0](https://wg21.link/p4100r0)), a project to bring coroutine-native byte-oriented I/O to C++.
 
-This paper is a tutorial. It shows how each of the thirty sender algorithms in C++26 works, what each one is for, and what the equivalent C++ program looks like.
+Falco developed and maintains [Capy](https://github.com/cppalliance/capy)<sup>[5]</sup> and [Corosio](https://github.com/cppalliance/corosio)<sup>[4]</sup> and believes coroutine-native I/O is the correct foundation for networking in C++.
 
-`std::execution` ([P2300R10](https://wg21.link/p2300r10))<sup>[6]</sup> provides compile-time sender composition, structured concurrency guarantees, zero-allocation pipelines in steady state, and a customization point model that enables heterogeneous dispatch across execution contexts. The P2300 authors built a framework grounded in four decades of programming language research - the lambda calculus, continuation-passing style, monadic composition, and algebraic effect channels - and delivered it as a working C++ library that ships in production at NVIDIA and Citadel Securities<sup>[7]</sup>. The [stdexec](https://github.com/NVIDIA/stdexec)<sup>[8]</sup> reference implementation demonstrates performance on par with hand-written CUDA<sup>[9]</sup>. The engineering depth is real. The theoretical foundations are sound. The achievement deserves the recognition it has earned.
-
-The author believes coroutine-native I/O is the correct foundation for networking in C++.
-
-A coroutine-native design cannot express compile-time work graphs. That is a genuine limitation, and domains that need compile-time work graphs - GPU dispatch, heterogeneous execution, high-frequency trading - are right to use a model that provides them.
+Coroutine-native I/O and `std::execution` address different domains and should coexist in the C++ standard.
 
 All original content in this paper is dedicated to the public domain under [CC0 1.0 Universal](https://creativecommons.org/publicdomain/zero/1.0/). This dedication does not affect the non-exclusive rights already granted to ISO/IEC and INCITS through the author's participation in standards development. Anyone may freely reuse, adapt, or republish this material - in whole or in part - as tutorials, documentation, or other teaching materials, with or without attribution.
 
-The author asks for nothing.
+This paper asks for nothing.
 
 ---
 
@@ -727,7 +723,7 @@ auto sndr = just(records)
 
 A parallel for-loop. The function runs once per index, and the execution policy controls whether the invocations overlap.
 
-`bulk` is the data-parallel primitive. The execution policy controls whether the invocations may run concurrently. The `parallel_scheduler` ([P2079R10](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p2079r10.html))<sup>[20]</sup> provides a customized implementation that executes the index space across the system thread pool. The design is remarkably expressive - a single algorithm covers sequential iteration, parallel map, and GPU-dispatched computation depending on the scheduler and policy.
+`bulk` is the data-parallel primitive. The execution policy controls whether the invocations may run concurrently. The `parallel_scheduler` ([P2079R10](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p2079r10.html), "Parallel Scheduler")<sup>[20]</sup> provides a customized implementation that executes the index space across the system thread pool. The design is remarkably expressive - a single algorithm covers sequential iteration, parallel map, and GPU-dispatched computation depending on the scheduler and policy.
 
 The equivalent program:
 
@@ -859,7 +855,7 @@ auto result = process(future.get());
 
 ## 11. The `task` Coroutine Type
 
-[P3552R3](https://wg21.link/p3552r3)<sup>[2]</sup> adds `execution::task<T, C>` to C++26 - a coroutine type that is also a sender. [P3796R1](https://wg21.link/p3796r1)<sup>[18]</sup> catalogs open design concerns. The `task` is the bridge between coroutine-style `co_await` and the sender pipeline model. The integration between the two worlds is seamless: a `task` can `co_await` any sender, and a `task` can be used as a sender in any pipeline.
+[P3552R3](https://wg21.link/p3552r3)<sup>[2]</sup> adds `execution::task<T, C>` to C++26 - a coroutine type that is also a sender. [P3796R1](https://wg21.link/p3796r1) ("Coroutine Task Issues")<sup>[18]</sup> catalogs open design concerns. The `task` is the bridge between coroutine-style `co_await` and the sender pipeline model. The integration between the two worlds is seamless: a `task` can `co_await` any sender, and a `task` can be used as a sender in any pipeline.
 
 ### 11.1 `task<T>`
 
@@ -1263,7 +1259,7 @@ task<actuator_result> safety_controller(
 
 ## 13. Real World Examples
 
-The following examples are drawn from the [stdexec](https://github.com/NVIDIA/stdexec)<sup>[8]</sup> reference implementation (whose algorithm customization model is addressed by [P3826R3](https://wg21.link/p3826r3)<sup>[19]</sup>) and the [sender-examples](https://github.com/steve-downey/sender-examples)<sup>[21]</sup> repository. They demonstrate patterns that combine the algorithms from this tutorial into working code at a scale the reader may encounter in practice.
+The following examples are drawn from the [stdexec](https://github.com/NVIDIA/stdexec)<sup>[8]</sup> reference implementation (whose algorithm customization model is addressed by [P3826R3](https://wg21.link/p3826r3) ("Fix Sender Algorithm Customization")<sup>[19]</sup>) and the [sender-examples](https://github.com/steve-downey/sender-examples)<sup>[21]</sup> repository. They demonstrate patterns that combine the algorithms from this tutorial into working code at a scale the reader may encounter in practice.
 
 ### 13.1 The Backtracker
 

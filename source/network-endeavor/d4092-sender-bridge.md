@@ -1,5 +1,5 @@
 ---
-title: "Consuming Senders from Coroutine-Native Code"
+title: "Info: Consuming Senders from Coroutine-Native Code"
 document: P4092R0
 date: 2026-03-13
 reply-to:
@@ -27,11 +27,17 @@ An `IoAwaitable` bridge ([P4003R0](https://wg21.link/p4003r0)<sup>[3]</sup>) con
 
 ## 1. Disclosure
 
-This paper is part of the Network Endeavor ([P4100R0](https://wg21.link/p4100r0)), a thirteen-paper project to bring networking to C++29 using a coroutine-native approach. The authors developed [Capy](https://github.com/cppalliance/capy)<sup>[4]</sup> and [Corosio](https://github.com/cppalliance/corosio)<sup>[6]</sup> and believe coroutine-native I/O is the correct foundation for networking in C++. The bridge depends on [Capy](https://github.com/cppalliance/capy)<sup>[4]</sup> (coroutine primitives, no sockets, no platform I/O) and `beman::execution`<sup>[5]</sup>. The authors provide information, ask nothing, and serve at the pleasure of the chair.
+The author provides information and serves at the pleasure of the committee.
 
-The authors regard `std::execution` as an important contribution to C++ and support its standardization for the domains it serves well - GPU dispatch, heterogeneous execution, and compile-time work-graph composition among them. Nothing in this paper or its companions argues for removing, delaying, or diminishing `std::execution`.
+This paper is part of the Network Endeavor, a project to bring coroutine-native byte-oriented I/O to C++.
 
-The authors' position is narrower: that networking and stream I/O present a compound-result structure that the three-channel model was not designed to carry, and that this domain is better served by a coroutine-native facility that can coexist with senders and interoperate where the domains meet. Two models, each correct for its domain, is a stronger standard than one model asked to serve both.
+The author developed and maintains [Capy](https://github.com/cppalliance/capy)<sup>[4]</sup> and [Corosio](https://github.com/cppalliance/corosio)<sup>[6]</sup> and believes coroutine-native I/O is the correct foundation for networking in C++.
+
+Coroutine-native I/O and `std::execution` address different domains and should coexist in the C++ standard.
+
+The bridge depends on [Capy](https://github.com/cppalliance/capy)<sup>[4]</sup> (coroutine primitives, no sockets, no platform I/O) and `beman::execution`<sup>[5]</sup>.
+
+This paper asks for nothing.
 
 ---
 

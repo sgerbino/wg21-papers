@@ -1,5 +1,5 @@
 ---
-title: "Retrospective: The Networking Claim and P2453R0"
+title: "History: The Networking Claim and P2453R0"
 document: P4097R0
 date: 2026-03-16
 reply-to:
@@ -26,21 +26,21 @@ In October 2021, LEWG polled: "The sender/receiver model (P2300) is a good basis
 
 ## 1. Disclosure
 
-This paper is part of the Network Endeavor ([P4100R0](https://wg21.link/p4100r0)), a thirteen-paper project to bring networking to C++29 using a coroutine-native approach. The author developed and maintains [Corosio](https://github.com/cppalliance/corosio)<sup>[1]</sup> and [Capy](https://github.com/cppalliance/capy)<sup>[2]</sup> and believes coroutine-native I/O is the correct foundation for networking in C++. The author provides information, asks nothing, and serves at the pleasure of the chair.
+The author provides information and serves at the pleasure of the committee.
 
-The committee has been trying to standardize networking since 2005. This retrospective examines the published record to identify the failure modes that prevented delivery, so the next attempt can avoid them. Its findings stand on their own. That effort requires re-examining consequential papers, including papers written by people the author respects.
+This paper is part of the Network Endeavor, a project to bring coroutine-native byte-oriented I/O to C++.
 
-### P2469R0
+The author developed and maintains [Capy](https://github.com/cppalliance/capy)<sup>[2]</sup> and [Corosio](https://github.com/cppalliance/corosio)<sup>[1]</sup> and believes coroutine-native I/O is the correct foundation for networking in C++.
+
+Coroutine-native I/O and `std::execution` address different domains and should coexist in the C++ standard.
+
+This paper examines the published record. That effort requires re-examining consequential papers, including papers written by people the author respects.
 
 The author is a co-author of [P2469R0](https://wg21.link/p2469r0)<sup>[3]</sup>, "Response to P2464: The Networking TS is baked, P2300 Sender/Receiver is not," which argued in October 2021 that the Networking TS was more mature than P2300. The reader should be aware that the author had a prior published position on the relationship between the Networking TS and [P2300](https://wg21.link/p2300)<sup>[4]</sup>.
 
-### Methodology and Limitations
+The author's research method is systematic search of the published record - WG21 papers, published poll outcomes, and public mailing list archives. Every source cited in this paper is a published WG21 paper available on open-std.org or a published presentation available through wg21.link. The author also searched the LEWG reflector archives for evidence of sender-based networking deployments, prototypes, or implementations. No such deployment was identified. The reflector is not a public source and its contents are not quoted in this paper. The author acknowledges that absence of evidence is not evidence of absence. Committee discussions occur in rooms, hallways, dinners, and private channels that leave no public trace. Evidence that P2300 works for networking may exist in unpublished prototypes, internal deployments, or private communications. The author cannot prove that such evidence does not exist. If a reader is aware of a published document, deployment, or prototype that this paper's research did not reach, the author welcomes the correction and will update the record in a future revision.
 
-The author's research method is systematic search of the published record - WG21 papers, published poll outcomes, and public mailing list archives. Every source cited in this paper is a published WG21 paper available on open-std.org or a published presentation available through wg21.link.
-
-The author also searched the LEWG reflector archives for evidence of sender-based networking deployments, prototypes, or implementations. No such deployment was identified. The reflector is not a public source and its contents are not quoted in this paper.
-
-The author acknowledges that absence of evidence is not evidence of absence. Committee discussions occur in rooms, hallways, dinners, and private channels that leave no public trace. Evidence that P2300 works for networking may exist in unpublished prototypes, internal deployments, or private communications. The author cannot prove that such evidence does not exist. If a reader is aware of a published document, deployment, or prototype that this paper's research did not reach, the author welcomes the correction and will update the record in a future revision.
+This paper asks for nothing.
 
 ---
 

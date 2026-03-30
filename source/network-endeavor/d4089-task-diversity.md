@@ -1,5 +1,5 @@
 ---
-title: "On the Diversity of Coroutine Task Types"
+title: "Info: On the Diversity of Coroutine Task Types"
 document: P4089R0
 date: 2026-03-15
 reply-to:
@@ -26,9 +26,17 @@ The Environment parameter in `std::execution::task` makes cross-library coroutin
 
 ## 1. Disclosure
 
-This paper is part of the Network Endeavor ([P4100R0](https://wg21.link/p4100r0)), a thirteen-paper project to bring networking to C++29 using a coroutine-native approach. The author developed and maintains [Corosio](https://github.com/cppalliance/corosio)<sup>[33]</sup> and [Capy](https://github.com/cppalliance/capy)<sup>[32]</sup> and believes coroutine-native I/O is the correct foundation for networking in C++. The cross-library bridges (Section 8) were authored by Klemens Morgenstern. The frame allocator gap was identified by Peter Dimov. Neither is a co-author. The author provides information, asks nothing, and serves at the pleasure of the chair.
+The author provides information and serves at the pleasure of the committee.
 
-The author regards `std::execution` as an important contribution to C++ and supports its standardization for the domains it serves well - GPU dispatch, heterogeneous execution, and compile-time work-graph composition among them. Nothing in this paper or its companions argues for removing, delaying, or diminishing `std::execution`. A coroutine-native design cannot express compile-time work graphs or heterogeneous dispatch - domains where `std::execution` has no peer. The author's position is narrower: that networking and stream I/O present a compound-result structure that the three-channel model was not designed to carry, and that this domain is better served by a coroutine-native facility that can coexist with senders and interoperate where the domains meet. Two models, each correct for its domain, is a stronger standard than one model asked to serve both.
+This paper is part of the Network Endeavor, a project to bring coroutine-native byte-oriented I/O to C++.
+
+The author developed and maintains [Capy](https://github.com/cppalliance/capy)<sup>[32]</sup> and [Corosio](https://github.com/cppalliance/corosio)<sup>[33]</sup> and believes coroutine-native I/O is the correct foundation for networking in C++.
+
+Coroutine-native I/O and `std::execution` address different domains and should coexist in the C++ standard.
+
+The cross-library bridges (Section 8) were authored by Klemens Morgenstern. The frame allocator gap was identified by Peter Dimov. Neither is a co-author.
+
+This paper asks for nothing.
 
 ---
 
@@ -340,7 +348,7 @@ Domain-specific task types interoperate through the C++20 awaitable protocol. Th
 
 The fix is a general pattern: define a concept that constrains awaitables, not task types. The promise remains the extension point. The return type stays clean.
 
-`IoAwaitable` ([P4003R0](https://wg21.link/p4003r0)<sup>[2]</sup>, "Coroutines for I/O") is one realization:
+`IoAwaitable` ([P4003R0](https://wg21.link/p4003r0)<sup>[2]</sup>) is one realization:
 
 ```cpp
 template<typename A>

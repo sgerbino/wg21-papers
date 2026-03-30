@@ -1,5 +1,5 @@
 ---
-title: "Sender I/O: A Constructed Comparison"
+title: "Info: Sender I/O: A Constructed Comparison"
 document: P4090R0
 date: 2026-03-15
 reply-to:
@@ -28,9 +28,15 @@ Four sender-based TCP echo servers are constructed from [P2300R10](https://wg21.
 
 ## 1. Disclosure
 
-This paper is part of the Network Endeavor ([P4100R0](https://wg21.link/p4100r0)), a thirteen-paper project to bring networking to C++29 using a coroutine-native approach. The authors developed and maintain [Corosio](https://github.com/cppalliance/corosio)<sup>[3]</sup> and [Capy](https://github.com/cppalliance/capy)<sup>[4]</sup> and believe coroutine-native I/O is the correct foundation for networking in C++. The sender model provides compile-time work graphs, lazy pipeline evaluation, and generic algorithms over heterogeneous sender types that the coroutine-native model does not. These are genuine strengths. The findings in this paper are limited to compound I/O results and hold regardless of which library implements the coroutine-native layer. The authors provide information, ask nothing, and serve at the pleasure of the chair.
+The author provides information and serves at the pleasure of the committee.
 
-The authors regard `std::execution` as an important contribution to C++ and support its standardization for the domains it serves well - GPU dispatch, heterogeneous execution, and compile-time work-graph composition among them. Nothing in this paper or its companions argues for removing, delaying, or diminishing `std::execution`. The authors' position is narrower: that networking and stream I/O present a compound-result structure that the three-channel model was not designed to carry, and that this domain is better served by a coroutine-native facility that can coexist with senders and interoperate where the domains meet. Two models, each correct for its domain, is a stronger standard than one model asked to serve both.
+This paper is part of the Network Endeavor, a project to bring coroutine-native byte-oriented I/O to C++.
+
+The author developed and maintains [Capy](https://github.com/cppalliance/capy)<sup>[4]</sup> and [Corosio](https://github.com/cppalliance/corosio)<sup>[3]</sup> and believes coroutine-native I/O is the correct foundation for networking in C++.
+
+Coroutine-native I/O and `std::execution` address different domains and should coexist in the C++ standard.
+
+This paper asks for nothing.
 
 ---
 

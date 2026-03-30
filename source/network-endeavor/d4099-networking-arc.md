@@ -1,5 +1,5 @@
 ---
-title: "Twenty-One Years: The Arc of Networking in C++"
+title: "History: The Twenty-One Year Networking Arc"
 document: P4099R0
 date: 2026-03-16
 reply-to:
@@ -26,9 +26,17 @@ This paper assembles the findings of five companion papers into a single causal 
 
 ## 1. Disclosure
 
-This paper is part of the Network Endeavor ([P4100R0](https://wg21.link/p4100r0)), a thirteen-paper project to bring networking to C++29 using a coroutine-native approach. The author developed and maintains [Corosio](https://github.com/cppalliance/corosio)<sup>[6]</sup> and [Capy](https://github.com/cppalliance/capy)<sup>[7]</sup> and believes coroutine-native I/O is the correct foundation for networking in C++. Coroutine-native I/O does not provide the sender composition algebra - `retry`, `when_all`, `upon_error` - that `std::execution` provides. The author provides information, asks nothing, and serves at the pleasure of the chair.
+The author provides information and serves at the pleasure of the committee.
 
-The committee has been trying to standardize networking since 2005. This retrospective examines the published record to identify the failure modes that prevented delivery, so the next attempt can avoid them. Its findings stand on their own. That effort requires re-examining consequential papers, including papers written by people the author respects.
+This paper is part of the Network Endeavor, a project to bring coroutine-native byte-oriented I/O to C++.
+
+The author developed and maintains [Capy](https://github.com/cppalliance/capy)<sup>[7]</sup> and [Corosio](https://github.com/cppalliance/corosio)<sup>[6]</sup> and believes coroutine-native I/O is the correct foundation for networking in C++.
+
+Coroutine-native I/O and `std::execution` address different domains and should coexist in the C++ standard.
+
+This paper examines the published record. That effort requires re-examining consequential papers, including papers written by people the author respects.
+
+This paper asks for nothing.
 
 ---
 
@@ -64,7 +72,7 @@ The following capabilities exist in 2026 that did not exist when the decisions i
 
 **C++20 coroutines** were ratified in 2020. They did not exist in 2014 when the unification decision was made, or in 2019 when [P1525R0](https://wg21.link/p1525r0)<sup>[10]</sup> diagnosed the basis operation. The coroutine executor concept constrains the handle type to `coroutine_handle<>`, restoring the type constraint that the rename from `dispatch`/`post`/`defer` to `execute(F&&)` removed.
 
-**The coroutine executor concept** was published in [P4003R0](https://wg21.link/p4003r0)<sup>[12]</sup> (2026). It provides `dispatch(coroutine_handle<>)` and `post(coroutine_handle<>)` - continuation-scheduling primitives with a typed handle. The four deficiencies [P1525R0](https://wg21.link/p1525r0)<sup>[10]</sup> identified do not arise under this concept ([P4095R0](https://wg21.link/p4095r0)<sup>[2]</sup> Section 4).
+**The coroutine executor concept** was published in [P4003R0](https://wg21.link/p4003r0)<sup>[12]</sup> (2026). It provides `dispatch` and `post` - continuation-scheduling primitives with a typed handle. The four deficiencies [P1525R0](https://wg21.link/p1525r0)<sup>[10]</sup> identified do not arise under this concept ([P4095R0](https://wg21.link/p4095r0)<sup>[2]</sup> Section 4).
 
 **The two-framing distinction** - work framing vs. continuation framing - was documented in [P4094R0](https://wg21.link/p4094r0)<sup>[1]</sup> Section 6. The continuation framing was the original framing ([P0113R0](https://wg21.link/p0113r0)<sup>[13]</sup>, 2015). The work framing replaced it through two stages of simplification. No published paper in the causal chain discussed the shift. The distinction is now available for the committee to apply.
 

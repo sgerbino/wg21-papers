@@ -23,7 +23,17 @@ Nobody has measured what the type-safety profile actually covers.
 
 ---
 
-## 1. The Evidence Gap
+## 1. Disclosure
+
+The author provides information and serves at the pleasure of the committee.
+
+The author believes profiles is a reasonable direction for C++ safety and deserves real-world use before the committee judges the design.
+
+This paper asks for nothing.
+
+---
+
+## 2. The Evidence Gap
 
 [P3984R0](https://wg21.link/p3984r0)<sup>[1]</sup> defines two profiles:
 
@@ -74,7 +84,7 @@ The answer might be large. The answer might be small. The answer is unknown. PAV
 
 ---
 
-## 2. The Profile Rules as AST Predicates
+## 3. The Profile Rules as AST Predicates
 
 The profile's banned constructs are syntactic. Each maps to a small set of Clang AST node types. A tool that walks the AST of every function in a translation unit can classify each function against the profile's rules without implementing a full profile checker.
 
@@ -99,7 +109,7 @@ The output of the tool is a per-function classification:
 
 ---
 
-## 3. Phase 1: Mechanical Classification
+## 4. Phase 1: Mechanical Classification
 
 Phase 1 runs the AST-based tool over a target codebase and produces an aggregate coverage report.
 
@@ -119,7 +129,7 @@ The rejected functions carry metadata: which rule each function violates. The di
 
 ---
 
-## 4. Phase 2: Semantic Analysis
+## 5. Phase 2: Semantic Analysis
 
 Phase 1 identifies what the profile rejects. Phase 2 asks whether the rejections are correct.
 
@@ -147,7 +157,7 @@ The LLM does not replace the formal guarantee. It expands the code surface that 
 
 ---
 
-## 5. Phase 3: Annotation Inference
+## 6. Phase 3: Annotation Inference
 
 For every function classified as "false positive, annotatable" in Phase 2, the annotation that would resolve the rejection can be generated.
 
@@ -163,7 +173,7 @@ The gap between Phase 1 coverage (before annotations) and Phase 3 coverage (afte
 
 ---
 
-## 6. Implications
+## 7. Implications
 
 Four outcomes are possible. Each is useful.
 
@@ -181,7 +191,7 @@ The methodology is not limited to the type-safety profile. Any profile whose rul
 
 ---
 
-## 7. The Tools Exist
+## 8. The Tools Exist
 
 The methodology described in this paper requires no novel tooling.
 
@@ -205,7 +215,7 @@ No compiler modification is required. No new language features are needed. The m
 
 ---
 
-## 8. Recommendation
+## 9. Recommendation
 
 The committee should require empirical coverage data before advancing profiles to the IS. The methodology described in this paper provides a reproducible way to generate that data.
 

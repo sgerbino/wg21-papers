@@ -1,5 +1,5 @@
 ---
-title: "Error Models of Regular C++ and the Sender Sub-Language"
+title: "Info: Error Models of Regular C++ and the Sender Sub-Language"
 document: P4091R0
 date: 2026-03-15
 reply-to:
@@ -41,9 +41,15 @@ The finding: both coroutines and senders have an abstraction floor - a boundary 
 
 ## 1. Disclosure
 
-This paper is part of the Network Endeavor ([P4100R0](https://wg21.link/p4100r0)), a thirteen-paper project to bring networking to C++29 using a coroutine-native approach. The author developed and maintains [Corosio](https://github.com/cppalliance/corosio)<sup>[4]</sup> and [Capy](https://github.com/cppalliance/capy)<sup>[5]</sup> and believes coroutine-native I/O is the correct foundation for networking in C++. The author provides information, asks nothing, and serves at the pleasure of the chair.
+The author provides information and serves at the pleasure of the committee.
 
-The author regards `std::execution` as an important contribution to C++ and supports its standardization for the domains it serves well - GPU dispatch, heterogeneous execution, and compile-time work-graph composition among them. Nothing in this paper or its companions argues for removing, delaying, or diminishing `std::execution`. The author's position is narrower: that networking and stream I/O present a compound-result structure that the three-channel model was not designed to carry, and that this domain is better served by a coroutine-native facility that can coexist with senders and interoperate where the domains meet. Two models, each correct for its domain, is a stronger standard than one model asked to serve both.
+This paper is part of the Network Endeavor, a project to bring coroutine-native byte-oriented I/O to C++.
+
+The author developed and maintains [Capy](https://github.com/cppalliance/capy)<sup>[5]</sup> and [Corosio](https://github.com/cppalliance/corosio)<sup>[4]</sup> and believes coroutine-native I/O is the correct foundation for networking in C++.
+
+Coroutine-native I/O and `std::execution` address different domains and should coexist in the C++ standard.
+
+This paper asks for nothing.
 
 ---
 

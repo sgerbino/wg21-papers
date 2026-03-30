@@ -1,5 +1,5 @@
 ---
-title: "Field Report: Coroutine-Native I/O at a Derivatives Exchange"
+title: "Report: Coroutine-Native I/O at a Derivatives Exchange"
 document: P4125R1
 date: 2026-03-17
 reply-to:
@@ -26,9 +26,17 @@ The paper reports qualitative findings from two structured interviews with the e
 
 ## 1. Disclosure
 
-The author is affiliated with the C++ Alliance, which develops [Capy](https://github.com/cppalliance/capy)<sup>[1]</sup> and [Corosio](https://github.com/cppalliance/corosio)<sup>[2]</sup>, the libraries under test. The integration partner is an independent commercial entity. The author has papers before the committee proposing coroutine-based I/O ([P4003R0](https://wg21.link/p4003r0) "Coroutines for I/O"<sup>[3]</sup>) and analysing `std::execution` ([P4007R1](https://isocpp.org/files/papers/P4007R1.pdf) "Open Issues in std::execution::task"<sup>[4]</sup>, [P4014R0](https://wg21.link/p4014r0) "The Sender Sub-Language"<sup>[5]</sup>).
+The author provides information and serves at the pleasure of the committee.
 
-This paper documents findings. It does not propose changes, request committee time, or advocate for a position. The evidence is early-stage and the authors acknowledge its limitations explicitly in Section8.
+This paper is part of the Network Endeavor, a project to bring coroutine-native byte-oriented I/O to C++.
+
+The author developed and maintains [Capy](https://github.com/cppalliance/capy)<sup>[1]</sup> and [Corosio](https://github.com/cppalliance/corosio)<sup>[2]</sup> and believes coroutine-native I/O is the correct foundation for networking in C++.
+
+Coroutine-native I/O and `std::execution` address different domains and should coexist in the C++ standard.
+
+The author is affiliated with the C++ Alliance, which develops the libraries under test. The integration partner is an independent commercial entity. This paper documents findings. It does not propose changes, request committee time, or advocate for a position. The evidence is early-stage and the authors acknowledge its limitations explicitly in Section 8.
+
+This paper asks for nothing.
 
 ---
 

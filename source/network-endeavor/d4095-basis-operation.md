@@ -1,5 +1,5 @@
 ---
-title: "Retrospective: The Basis Operation and P1525"
+title: "History: The Basis Operation and P1525"
 document: P4095R0
 date: 2026-03-16
 reply-to:
@@ -26,15 +26,21 @@ This paper documents what [P1525R0](https://wg21.link/p1525r0)<sup>[1]</sup>, "O
 
 ## 1. Disclosure
 
-This paper is part of the Network Endeavor ([P4100R0](https://wg21.link/p4100r0)), a thirteen-paper project to bring networking to C++29 using a coroutine-native approach. The author developed and maintains [Corosio](https://github.com/cppalliance/corosio)<sup>[6]</sup> and [Capy](https://github.com/cppalliance/capy)<sup>[7]</sup> and believes coroutine-native I/O is the correct foundation for networking in C++. The author provides information, asks nothing, and serves at the pleasure of the chair.
+The author provides information and serves at the pleasure of the committee.
 
-The committee has been trying to standardize networking since 2005. This retrospective examines the published record to identify the failure modes that prevented delivery, so the next attempt can avoid them. Its findings stand on their own. That effort requires re-examining consequential papers, including papers written by people the author respects.
+This paper is part of the Network Endeavor, a project to bring coroutine-native byte-oriented I/O to C++.
 
-### P1525R0
+The author developed and maintains [Capy](https://github.com/cppalliance/capy)<sup>[7]</sup> and [Corosio](https://github.com/cppalliance/corosio)<sup>[6]</sup> and believes coroutine-native I/O is the correct foundation for networking in C++.
+
+Coroutine-native I/O and `std::execution` address different domains and should coexist in the C++ standard.
+
+This paper examines the published record. That effort requires re-examining consequential papers, including papers written by people the author respects.
 
 [P1525R0](https://wg21.link/p1525r0)<sup>[1]</sup> was consequential. It provided the technical argument that the executor concept's basis operation was insufficient for building higher-level async control structures. The argument was adopted at Cologne. The sender/receiver model that replaced the executor concept traces its committee lineage to this paper. Decisions of that magnitude deserve periodic review. This paper provides one. The intent is to ensure the committee's record is complete, not to assign blame.
 
 The coroutine executor concept did not exist in 2019. C++20 coroutines were ratified in 2020. [P4003R0](https://wg21.link/p4003r0)<sup>[8]</sup>, "Coroutines for I/O," was published in 2026. The analysis this paper provides was not available when [P1525R0](https://wg21.link/p1525r0)<sup>[1]</sup> was written.
+
+This paper asks for nothing.
 
 ---
 

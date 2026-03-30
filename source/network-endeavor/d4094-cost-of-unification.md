@@ -1,5 +1,5 @@
 ---
-title: "Retrospective: The Unification of Executors and P0443"
+title: "History: The Unification of Executors and P0443"
 document: P4094R0
 date: 2026-03-16
 reply-to:
@@ -26,23 +26,23 @@ In 2014, three deployed executor models - networking, GPU dispatch, and thread p
 
 ## 1. Disclosure
 
-This paper is part of the Network Endeavor ([P4100R0](https://wg21.link/p4100r0)), a thirteen-paper project to bring networking to C++29 using a coroutine-native approach. The author developed and maintains [Corosio](https://github.com/cppalliance/corosio)<sup>[3]</sup> and [Capy](https://github.com/cppalliance/capy)<sup>[4]</sup> and believes coroutine-native I/O is the correct foundation for networking in C++. The author provides information, asks nothing, and serves at the pleasure of the chair.
+The author provides information and serves at the pleasure of the committee.
 
-The committee has been trying to standardize networking since 2005. This retrospective examines the published record to identify the failure modes that prevented delivery, so the next attempt can avoid them. Its findings stand on their own. That effort requires re-examining consequential papers, including papers written by people the author respects.
+This paper is part of the Network Endeavor, a project to bring coroutine-native byte-oriented I/O to C++.
 
-### P0443
+The author developed and maintains [Capy](https://github.com/cppalliance/capy)<sup>[4]</sup> and [Corosio](https://github.com/cppalliance/corosio)<sup>[3]</sup> and believes coroutine-native I/O is the correct foundation for networking in C++.
+
+Coroutine-native I/O and `std::execution` address different domains and should coexist in the C++ standard.
+
+This paper examines the published record. That effort requires re-examining consequential papers, including papers written by people the author respects.
 
 [P0443](https://wg21.link/p0443)<sup>[1]</sup> was consequential. It was the vehicle for the committee's decision to unify three independent executor models into a single abstraction. That decision shaped the trajectory of executors, networking, and async programming in C++ for a decade. Decisions of that magnitude deserve periodic review. This paper provides one. Where the record shows that certain questions were not asked, the paper names the questions. The intent is to ensure the committee's record is complete, not to assign blame.
 
-### P2469R0
-
 The author is a co-author of [P2469R0](https://wg21.link/p2469r0)<sup>[5]</sup>, "Response to P2464: The Networking TS is baked, P2300 Sender/Receiver is not," which is cited in this paper. The reader should be aware that the author had a prior published position on the relationship between the Networking TS and [P2300](https://wg21.link/p2300)<sup>[2]</sup>.
 
-### Methodology and Limitations
+The author's research method is systematic search of the published record - WG21 papers, published poll outcomes, public blog posts, conference talks, and public mailing list archives. Section 4 of this paper documents the absence of certain analyses from the published record. The author acknowledges that absence of evidence is not evidence of absence. Committee discussions occur in rooms, hallways, dinners, and private channels that leave no public trace. A cost/benefit analysis may have been conducted and never written down. A survey may have been taken and never published. The author cannot prove that these things did not happen. If a reader is aware of a document, analysis, or discussion that this paper's research did not reach, the author welcomes the correction and will update the record in a future revision.
 
-The author's research method is systematic search of the published record - WG21 papers, published poll outcomes, public blog posts, conference talks, and public mailing list archives. Section 4 of this paper documents the absence of certain analyses from the published record.
-
-The author acknowledges that absence of evidence is not evidence of absence. Committee discussions occur in rooms, hallways, dinners, and private channels that leave no public trace. A cost/benefit analysis may have been conducted and never written down. A survey may have been taken and never published. The author cannot prove that these things did not happen. If a reader is aware of a document, analysis, or discussion that this paper's research did not reach, the author welcomes the correction and will update the record in a future revision.
+This paper asks for nothing.
 
 ---
 
@@ -379,7 +379,7 @@ An application that runs networking on an I/O reactor and parallel algorithms on
 
 ### 7.4 Are Interop Bridges Expensive?
 
-If models are separate, bridging between them has a cost. [P4092R0](https://wg21.link/p4092r0)<sup>[26]</sup>, "Consuming Senders from Coroutine-Native Code," and [P4093R0](https://wg21.link/p4093r0)<sup>[27]</sup>, "Producing Senders from Coroutine-Native Code," demonstrate coroutine-to-sender and sender-to-coroutine bridges. The implementations exist.
+If models are separate, bridging between them has a cost. [P4092R0](https://wg21.link/p4092r0)<sup>[26]</sup> and [P4093R0](https://wg21.link/p4093r0)<sup>[27]</sup> demonstrate coroutine-to-sender and sender-to-coroutine bridges. The implementations exist.
 
 Is the bridge cost bounded and acceptable, or does it accumulate into a tax that makes separate models impractical? The implementations are published.
 

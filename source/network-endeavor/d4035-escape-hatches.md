@@ -1,5 +1,5 @@
 ---
-title: "The Need for Escape Hatches"
+title: "Support: The Need for Escape Hatches"
 document: D4035R0
 date: 2026-02-25
 reply-to:
@@ -21,13 +21,23 @@ audience: LEWG
 
 ---
 
-## 1. The Need for Escape Hatches
+## 1. Disclosure
+
+The author provides information and serves at the pleasure of the committee.
+
+This paper asks for nothing.
+
+---
+
+## 2. The Need for Escape Hatches
 
 Safe interfaces should be the default. They should validate input, maintain invariants, and protect users from misuse. However, C++ also needs an explicit path for trusted data - when the precondition is already satisfied at a boundary and re-validation is pure overhead.
 
 This pattern appears in the standard library, in production Boost libraries, in the current `cstring_view` proposal, and in coroutine-based concurrency libraries. Four independent examples follow. A fifth section applies the pattern to `cstring_view` constructor design. A sixth examines what happens when the pattern is applied to the implicit `char const*` constructor.
 
-## 2. Standard Precedent
+---
+
+## 3. Standard Precedent
 
 The standard library provides [`std::condition_variable`](https://eel.is/c++draft/thread.condition.condvar)<sup>[1]</sup>, which requires `std::unique_lock<std::mutex>`. This constraint enables optimizations. When the constraint is too narrow - when the user holds a different lock type - [`std::condition_variable_any`](https://eel.is/c++draft/thread.condition.condvarany)<sup>[1]</sup> provides the explicit broader path:
 
@@ -48,7 +58,9 @@ cv_any.wait(slk);
 
 The constrained interface is the default. The broader interface is explicit and named. Both exist in the standard.
 
-## 3. Established Practice
+---
+
+## 4. Established Practice
 
 [Boost.URL](https://github.com/boostorg/url)<sup>[2]</sup> provides `pct_string_view`, a non-owning reference to a valid percent-encoded string. Construction from untrusted input validates the encoding and throws on failure:
 
@@ -67,7 +79,9 @@ pct_string_view s = make_pct_string_view_unsafe(data, size, decoded_size);
 
 This pattern was adopted independently by three Boost libraries: Boost.URL ([`make_pct_string_view_unsafe`](https://github.com/boostorg/url/blob/develop/include/boost/url/pct_string_view.hpp)<sup>[3]</sup>), Boost.Process ([`basic_cstring_ref`](https://github.com/boostorg/process/blob/develop/include/boost/process/v2/cstring_ref.hpp)<sup>[4]</sup>), and Boost.SQLite ([`cstring_ref`](https://github.com/klemens-morgenstern/sqlite/blob/develop/include/boost/sqlite/cstring_ref.hpp)<sup>[5]</sup>). Three independent libraries arriving at the same design is not coincidence. It is convergence on a structural need.
 
-## 4. Application Level
+---
+
+## 5. Application Level
 
 On BSD-derived systems, directory iteration exposes a filename pointer and a filename length via `dirent` (`d_name` and `d_namlen`) [FreeBSD `readdir(3)`](https://man.freebsd.org/cgi/man.cgi?query=readdir&sektion=3)<sup>[6]</sup> and [FreeBSD `dirent.h`](https://cgit.freebsd.org/src/tree/sys/sys/dirent.h)<sup>[7]</sup>. POSIX requires that path components are null-terminated and contain no embedded null bytes [POSIX Base Definitions](https://pubs.opengroup.org/onlinepubs/9799919799/)<sup>[8]</sup>. Rescanning each name in a validating constructor repeats work the operating system already did.
 
@@ -88,7 +102,9 @@ void visit_directory(DIR* dir)
 
 The safe path remains the default for untrusted input. The unsafe path exists for proven preconditions and zero additional runtime cost.
 
-## 5. Structured Concurrency
+---
+
+## 6. Structured Concurrency
 
 Structured concurrency enforces the same discipline for asynchronous lifetimes that structured control flow enforces for execution order: activations nest, scopes nest, a parent outlives its children, and RAII works. [Capy](https://github.com/cppalliance/capy)<sup>[9]</sup> provides `run` as the structured default and `run_async` as the explicit escape hatch:
 
@@ -109,7 +125,9 @@ The structured path is the default. The unstructured path requires a longer name
 
 The consequences of misuse are higher in concurrency than in data validation - a wrong `pct_string_view` produces garbage data, while a wrong detached task produces data races. That severity is precisely why the escape hatch must be designed rather than left to raw `std::thread` or `std::async`, which offer none of these guardrails. Eliminating the escape hatch does not eliminate unstructured concurrency; it pushes programmers toward worse tools.
 
-## 6. `cstring_view` Constructors
+---
+
+## 7. `cstring_view` Constructors
 
 [P3655R3](https://wg21.link/p3655r3)<sup>[10]</sup> ("cstring_view") proposes `std::cstring_view`, a non-owning view guaranteed to be null-terminated. The type fills a real gap: `std::string` owns and null-terminates, `std::string_view` does not own and does not null-terminate, and `cstring_view` does not own but does null-terminate. Over 2,100 independent implementations on GitHub confirm the demand. The `substr` split - one-argument returning `cstring_view`, two-argument returning `string_view` - and the deletion of `remove_suffix` show careful attention to the null-termination invariant.
 
@@ -166,7 +184,7 @@ static constexpr cstring_view unsafe(
     const charT* str, size_type len) noexcept;
 ```
 
-The safe constructor scans. The cost is O(n). The `unsafe` factory trusts the caller and pays nothing. This is the same pattern as `pct_string_view` and `make_pct_string_view_unsafe` from Section 3 - safe by default, explicit opt-in at trusted boundaries.
+The safe constructor scans. The cost is O(n). The `unsafe` factory trusts the caller and pays nothing. This is the same pattern as `pct_string_view` and `make_pct_string_view_unsafe` from Section 4 - safe by default, explicit opt-in at trusted boundaries.
 
 C++ earns its reputation as a zero-cost abstraction language by letting programmers pay only for what they use. A type that validates on every construction - with no way to bypass validation at a trusted boundary - imposes cost the programmer cannot eliminate. The `unsafe` factory preserves this principle.
 
@@ -185,7 +203,9 @@ The contract requires `*(begin + (end - begin)) == '\0'` - the iterator at posit
 - **B.** Require only `[begin, end)` readable, scan the half-open range for the first null.
 - **C.** Remove the constructor. No demonstrated use case requires it that the pointer-and-length constructor does not already serve. Real-world `cstring_view` usage originates from `const char*` (C APIs, OS calls, string literals) or from `std::string` (implicit conversion). Ship the type without this constructor; add it later when evidence of need emerges.
 
-## 7. The Implicit Constructor
+---
+
+## 8. The Implicit Constructor
 
 P3566R2's `char[N]` constructor is a genuine improvement. It captures bounds at compile time, eliminates `strlen` for string literals, and provides bounded safety for array sources.
 
@@ -228,7 +248,9 @@ P3566R2's own migration data quantifies the scope. The Qt experiment reports tha
 
 The `char[N]` constructor adds a bounded path for literals. The `char const*` constructor is the only implicit path for runtime string sources - `std::exception::what()`, `std::getenv()`, `std::strerror()`, stored `c_str()` results, ternary expressions. Adding a path is not the same as closing one.
 
-## 8. Conclusion
+---
+
+## 9. Conclusion
 
 The standard library already provides constrained defaults with explicit broader counterparts. Production libraries independently converge on the same pattern for trusted boundaries. The same principle governs concurrency structure. The evidence documents a recurring design value: safe by default, with explicit escape hatches where zero-cost composition requires them.
 

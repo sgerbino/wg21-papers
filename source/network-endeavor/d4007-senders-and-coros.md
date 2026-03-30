@@ -1,5 +1,5 @@
 ---
-title: "Open Issues in `std::execution::task`"
+title: "Info: Open Issues in `std::execution::task`"
 document: D4007R1
 date: 2026-03-12
 reply-to:
@@ -28,7 +28,13 @@ audience: LEWG
 
 ## 1. Disclosure
 
+The author provides information and serves at the pleasure of the committee.
+
+This paper is part of the Network Endeavor, a project to bring coroutine-native byte-oriented I/O to C++.
+
 The authors developed [P4007R0](https://wg21.link/p4007r0)<sup>[2]</sup> ("Senders and Coroutines"). The classification below holds regardless of whether any alternative design exists.
+
+This paper asks for nothing.
 
 ---
 

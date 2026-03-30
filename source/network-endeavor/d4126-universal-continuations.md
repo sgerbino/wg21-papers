@@ -1,5 +1,5 @@
 ---
-title: "A Universal Continuation Model"
+title: "Info: A Universal Continuation Model"
 document: P4126R0
 date: 2026-03-18
 reply-to:
@@ -31,9 +31,17 @@ This paper traces the history of alternative coroutine designs that explored the
 
 ## 1. Disclosure
 
-This paper is part of the Network Endeavor ([P4100R0](https://wg21.link/p4100r0)<sup>[2]</sup>), a project to bring networking to C++29 using a coroutine-native approach. The author developed and maintains [Corosio](https://github.com/cppalliance/corosio)<sup>[3]</sup> and [Capy](https://github.com/cppalliance/capy)<sup>[4]</sup> and believes coroutine-native I/O is the correct foundation for networking in C++. Coroutine-native I/O does not target compile-time work graphs. The author provides information, asks nothing, and serves at the pleasure of the chair.
+The author provides information and serves at the pleasure of the committee.
+
+This paper is part of the Network Endeavor, a project to bring coroutine-native byte-oriented I/O to C++.
+
+The author developed and maintains [Capy](https://github.com/cppalliance/capy)<sup>[4]</sup> and [Corosio](https://github.com/cppalliance/corosio)<sup>[3]</sup> and believes coroutine-native I/O is the correct foundation for networking in C++.
+
+Coroutine-native I/O and `std::execution` address different domains and should coexist in the C++ standard.
 
 This paper seeks input from EWG, SG1, LEWG, and the sender/receiver community. The ideas are presented for discussion, not as a finished proposal. The author invites collaboration from compiler implementers, language designers, and anyone who has thought about the boundary between coroutines and senders.
+
+This paper asks for nothing.
 
 ---
 
@@ -105,7 +113,7 @@ The handle is the only thing the executor sees. It calls `.resume()`. It does no
 
 ## 3. The Problem
 
-The only way to obtain a `coroutine_handle<>` today is from a coroutine. A coroutine requires a frame allocation. The sender-to-awaitable bridge in [P4092R0](https://wg21.link/p4092r0)<sup>[5]</sup>, "Consuming Senders from Coroutine-Native Code," demonstrates this: the bridge creates a coroutine whose sole purpose is to hold a handle that the reactor can resume. The coroutine frame is the tax.
+The only way to obtain a `coroutine_handle<>` today is from a coroutine. A coroutine requires a frame allocation. The sender-to-awaitable bridge in [P4092R0](https://wg21.link/p4092r0)<sup>[5]</sup> demonstrates this: the bridge creates a coroutine whose sole purpose is to hold a handle that the reactor can resume. The coroutine frame is the tax.
 
 [P4092R0](https://wg21.link/p4092r0)<sup>[5]</sup> Appendix A shows the bridge implementation. The `bridge_task` coroutine exists to produce a `coroutine_handle<>`. The coroutine body calls `co_await` on the IoAwaitable, and the `await_suspend` receives the handle from the compiler. The bridge works. It allocates a coroutine frame per I/O operation.
 

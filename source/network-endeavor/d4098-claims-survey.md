@@ -1,5 +1,5 @@
 ---
-title: "Retrospective: Async Claims and Evidence"
+title: "History: Async Claims and Evidence"
 document: P4098R0
 date: 2026-03-16
 reply-to:
@@ -26,17 +26,23 @@ This paper surveys the published claims that shaped the trajectory of executors,
 
 ## 1. Disclosure
 
-This paper is part of the Network Endeavor ([P4100R0](https://wg21.link/p4100r0)), a thirteen-paper project to bring networking to C++29 using a coroutine-native approach. The author developed and maintains [Corosio](https://github.com/cppalliance/corosio)<sup>[1]</sup> and [Capy](https://github.com/cppalliance/capy)<sup>[2]</sup> and believes coroutine-native I/O is the correct foundation for networking in C++. Coroutine-native I/O does not provide the sender composition algebra - `retry`, `when_all`, `upon_error` - that `std::execution` provides. The author provides information, asks nothing, and serves at the pleasure of the chair.
+The author provides information and serves at the pleasure of the committee.
 
-The committee has been trying to standardize networking since 2005. This retrospective examines the published record to identify the failure modes that prevented delivery, so the next attempt can avoid them. Its findings stand on their own. That effort requires re-examining consequential papers, including papers written by people the author respects.
+This paper is part of the Network Endeavor, a project to bring coroutine-native byte-oriented I/O to C++.
 
-### Methodology and Limitations
+The author developed and maintains [Capy](https://github.com/cppalliance/capy)<sup>[2]</sup> and [Corosio](https://github.com/cppalliance/corosio)<sup>[1]</sup> and believes coroutine-native I/O is the correct foundation for networking in C++.
+
+Coroutine-native I/O and `std::execution` address different domains and should coexist in the C++ standard.
+
+This paper examines the published record. That effort requires re-examining consequential papers, including papers written by people the author respects.
 
 **Selection criteria.** Claims were selected from the papers in the causal chain documented in the companion papers - [P4094R0](https://wg21.link/p4094r0)<sup>[3]</sup>, [P4095R0](https://wg21.link/p4095r0)<sup>[4]</sup>, [P4096R0](https://wg21.link/p4096r0)<sup>[5]</sup>, and [P4097R0](https://wg21.link/p4097r0)<sup>[6]</sup> - plus additional claims from [P2453R0](https://wg21.link/p2453r0)<sup>[17]</sup> and [P2470R0](https://wg21.link/p2470r0)<sup>[18]</sup> that shaped the committee's direction. Claims from both sides of the debate were included: the unification proponents (P0443, P0761R2, P1525R0), the P2464R0 diagnosis, the P2469R0 response, the P2300 deployment claims, and the pro-Networking-TS claims (Section 2.6). The published record was searched using all WG21 papers available to the author through the March 2026 mailing.
 
 **Evidence bar.** The bar for evidence is deliberately low. A code snippet from a real codebase counts. A prototype counts. A survey of even a handful of users counts. A hypothetical code example constructed by the author counts - the table notes it. Where the Evidence column is empty, the search found nothing.
 
 **Limitations.** The author acknowledges that absence of evidence is not evidence of absence. Committee discussions occur in rooms, hallways, dinners, and private channels that leave no public trace. Committee members bring domain expertise to polls and design reviews that is not captured in published papers; the absence of a published document does not mean the absence of informed judgment. If a reader is aware of a document, analysis, or discussion that this paper's research did not reach, the author welcomes the correction and will update the record in a future revision.
+
+This paper asks for nothing.
 
 ---
 
