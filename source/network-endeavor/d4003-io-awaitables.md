@@ -448,8 +448,6 @@ See [P4172R0](https://wg21.link/p4172r0)<sup>[1]</sup> for detailed examples and
 - Cancellation propagates forward. Destruction propagates backward. Both are automatic.
 - For byte I/O, the language provides what a library would reimplement.
 
-_IoAwaitable_ is **structured** concurrency:
-
 - `when_all` and `when_any` in [Capy](https://github.com/cppalliance/capy)<sup>[2]</sup> (`include/boost/capy/when_all.hpp`, `when_any.hpp`)
 
 ```cpp
@@ -457,8 +455,6 @@ auto [ec, counts] = co_await when_all(std::move(reads));
 
 auto result = co_await when_any(std::move(reads));
 ```
-
-_IoAwaitable_ **is** structured concurrency:
 
 1. The awaitable owns the suspended coroutine handle.
 2. The awaitable submits the operation and transfers ownership to the executor.
@@ -572,9 +568,9 @@ These are the costs coroutines pay based on what I/O returns.
 
 Type-erasing either argument to `connect(sndr, rcvr)` requires a heap allocation on every operation.
 
-Routing coroutine byte-oriented I/O through `std::execution` permanently disadvantages coroutines that await sender-returning I/O functions.
+Routing coroutine byte-oriented I/O through `std::execution` structurally disadvantages coroutines under P2300R10's `connect`/`start` architecture.
 
-The sender composition algebra also does not apply to compound I/O results - such as `[ec, n]` - without data loss or shared state; the sender three-channel model conflicts with `error_code` as a value-channel result.<sup>[30,31]</sup>
+The sender composition algebra also does not apply to compound I/O results - such as `[ec, n]` - without data loss or shared state; the sender three-channel model is in tension with `error_code` as a value-channel result.<sup>[30,31]</sup>
 
 See [P4172R0](https://wg21.link/p4172r0)<sup>[1]</sup> for detailed analysis.
 
