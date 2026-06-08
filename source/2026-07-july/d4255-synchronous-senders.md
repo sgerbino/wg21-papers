@@ -122,7 +122,7 @@ Before examining the sender path for synchronous I/O, three genuine achievements
 
 **Structured concurrency.** `counting_scope` tracks dynamically spawned work and prevents scope destruction until all work completes.<sup>[3]</sup>
 
-The comparison that follows grants senders every affordance: `inline_scheduler` as the completion scheduler, synchronous completion inside `start`, and the minimal `completion_signatures<set_value_t()>`. No conforming task implementation can avoid this path; the sender protocol imposes it.
+The comparison that follows grants senders every affordance: an `inline_scheduler`-scheduled task so `await_transform` applies no affinity wrap, synchronous completion inside `start`, and the minimal `completion_signatures<set_value_t()>`. No conforming task implementation can avoid this path; the sender protocol imposes it.
 
 ## 6. The Sender Path
 
@@ -191,6 +191,8 @@ execution::task<> log_lines(
         co_await sink.write(line);
 }
 ```
+
+The analysis below takes the task's scheduler to be `inline_scheduler`. A task's default scheduler is `task_scheduler`,<sup>[5]</sup> under which `await_transform` wraps each awaited sender in `affine_on`; `inline_scheduler` is the configuration that grants the sender its most favorable synchronous path, with no affinity wrap.
 
 What happens inside `co_await sink.write(line)`, per the specification:
 
@@ -286,7 +288,7 @@ Three protocol steps. No suspension. No operation state. No receiver. No `varian
 
 The awaitable protocol and the sender protocol are not mutually exclusive. An IoAwaitable can be wrapped as a sender and consumed by sender pipelines.
 
-[P4093R1](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4093r1.pdf)<sup>[9]</sup> provides `as_sender`, which wraps any IoAwaitable as a `std::execution` sender:
+[P4093R1](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4093r1.pdf)<sup>[8]</sup> provides `as_sender`, which wraps any IoAwaitable as a `std::execution` sender:
 
 ```cpp
 auto sndr = as_sender(sink.write(line))
@@ -299,13 +301,13 @@ auto sndr = as_sender(sink.write(line))
 
 The sender algebra works. `when_all` composes bridged IoAwaitables into parallel work. `let_value` sequences them. `upon_error` handles failures. The IoAwaitable is a leaf node in the sender's work graph. Structured concurrency is inherited from the sender pipeline.
 
-Without callback handles, the bridge allocates one coroutine frame per bridged operation - the frame exists only to produce a `coroutine_handle<>`, the only type the awaitable protocol accepts. [P4126R1](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4126r1.pdf)<sup>[10]</sup> shows this allocation is eliminable. A callback handle - three pointers matching the coroutine frame prefix, zero heap allocation - gives senders a `coroutine_handle<>` without allocating a frame. The bridge cost drops to zero.
+Without callback handles, the bridge allocates one coroutine frame per bridged operation - the frame exists only to produce a `coroutine_handle<>`, the only type the awaitable protocol accepts. [P4126R1](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4126r1.pdf)<sup>[9]</sup> shows this allocation is eliminable. A callback handle - three pointers matching the coroutine frame prefix, zero heap allocation - gives senders a `coroutine_handle<>` without allocating a frame. The bridge cost drops to zero.
 
 IoAwaitables own the I/O layer. Sender pipelines own the composition layer. The bridge connects them. With callback handles, the bridge is free.
 
 ## 10. The Case for Coroutine I/O
 
-Section 9 shows IoAwaitables entering sender pipelines via `as_sender`.<sup>[9]</sup> [P4092R1](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4092r1.pdf)<sup>[11]</sup> shows senders consumed from coroutine-native code without `execution::task`. The bridge goes both ways. The broader design fork is documented in [P4088R1](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4088r1.pdf).<sup>[12]</sup>
+Section 9 shows IoAwaitables entering sender pipelines via `as_sender`.<sup>[8]</sup> [P4092R1](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4092r1.pdf)<sup>[10]</sup> shows senders consumed from coroutine-native code without `execution::task`. The bridge goes both ways. The broader design fork is documented in [P4088R1](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4088r1.pdf)<sup>[11]</sup>.
 
 The question is not which model is more powerful. It is which implementation shape minimizes total cost when both consumers exist.
 
@@ -315,14 +317,14 @@ The question is not which model is more powerful. It is which implementation sha
 | Synchronous | Zero (no suspend) | 7-step ceremony (Section 6) |
 | Asynchronous | Zero protocol overhead (inherent suspend only) | Inherent suspend + ceremony |
 | **Sender pipeline** | | |
-| Synchronous | Zero ([P4126R1](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4126r1.pdf))<sup>[10]</sup> | Zero |
-| Asynchronous | Zero ([P4126R1](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4126r1.pdf))<sup>[10]</sup> | Zero |
+| Synchronous | Zero ([P4126R1](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4126r1.pdf))<sup>[9]</sup> | Zero |
+| Asynchronous | Zero ([P4126R1](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4126r1.pdf))<sup>[9]</sup> | Zero |
 
 The awaitable column is four zeros. For synchronous I/O, the sender column carries the full seven-step ceremony of Section 6. For asynchronous I/O, the sender protocol adds ceremony - `connect`, receiver wiring, `variant` emplacement, affinity wrapping - atop the inherent suspend. The ceremony is not inherent to the async operation. It is inherent to the sender protocol.
 
 For asynchronous I/O these added steps are a step count, not a separately observable runtime cost: once the operation suspends to a scheduler, the suspension dominates and the steps are not measurable above it. The case this paper isolates is synchronous completion, where no suspension absorbs them.
 
-The sender pipeline cells in the awaitable column depend on P4126R1<sup>[10]</sup> callback handles. Without callback handles, senders consuming an awaitable allocate one coroutine frame per operation. Two of the awaitable column's four zeros require P4126R1.
+The sender pipeline cells in the awaitable column depend on P4126R1<sup>[9]</sup> callback handles. Without callback handles, senders consuming an awaitable allocate one coroutine frame per operation. Two of the awaitable column's four zeros require P4126R1.
 
 The awaitable is the implementation shape where neither consumer pays a protocol tax.
 
@@ -376,7 +378,7 @@ The sender model, as specified, does not match the awaitable model for synchrono
 
 ### 12.1. A Readiness Query
 
-`sender-awaitable::await_ready()` returns `false` unconditionally.<sup>[3]</sup><sup>[8]</sup> To skip suspension for senders that complete synchronously, a readiness query is required. The sender must advertise, at compile time or at run time, that its `start` will call `set_value` before returning.
+`sender-awaitable::await_ready()` returns `false` unconditionally.<sup>[3]</sup><sup>[12]</sup> To skip suspension for senders that complete synchronously, a readiness query is required. The sender must advertise, at compile time or at run time, that its `start` will call `set_value` before returning.
 
 [P3552R3](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3552r3.html)<sup>[5]</sup>'s `await_transform` could detect synchronous senders before they enter `as_awaitable` and bypass the `sender-awaitable` path entirely. It does not.
 
@@ -467,7 +469,7 @@ struct immediate
 
 ## 13. Concerns
 
-**"P4126R1 is unshipped. The bridge cost is hypothetical."** Two of the awaitable column's four zeros in Section 10 depend on [P4126R1](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4126r1.pdf).<sup>[10]</sup> The dependency is real. It is also an argument for collaboration, not against the design. The architects of P2300 should work with the author to move P4126R1 forward - so that sender pipelines can consume all awaitables for free. The core finding (Sections 6-8) stands on shipped specification alone; the bridge zeros are the prize collaboration unlocks.
+**"P4126R1 is unshipped. The bridge cost is hypothetical."** Two of the awaitable column's four zeros in Section 10 depend on [P4126R1](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4126r1.pdf)<sup>[9]</sup>. The dependency is real. It is also an argument for collaboration, not against the design. The architects of `std::execution` should work with the author to move P4126R1 forward - so that sender pipelines can consume all awaitables for free. The core finding (Sections 6-8) stands on shipped specification alone; the bridge zeros are the prize collaboration unlocks.
 
 **"A sender can provide a member `as_awaitable` and skip the ceremony. No protocol change is needed."** True. `[exec.as.awaitable]` uses a sender's own `as_awaitable` when the sender provides one, in preference to constructing the generic `sender-awaitable`:<sup>[3]</sup>
 
@@ -499,7 +501,7 @@ The scope is the coroutine consumer. A sender pipeline never enters `as_awaitabl
 
 **"Protocol step counts are not runtime costs."** True for `connect`, `start`, and `set_value` when sender and receiver are fully visible to the optimizer and the optimizer is sufficiently aggressive. Not true for the suspension/resumption pair, which remains observable regardless of inlining. Not true across type-erasure boundaries, where `any_sender::connect` materializes an operation state the compiler cannot see through.
 
-**"Awaitables don't compose into work graphs."** They do, through the bridge. Section 9 shows IoAwaitables consumed by sender pipelines via `as_sender`.<sup>[9]</sup> The sender algebra - `when_all`, `let_value`, `upon_error` - works. The bridge cost is eliminable.<sup>[10]</sup>
+**"Awaitables don't compose into work graphs."** They do, through the bridge. Section 9 shows IoAwaitables consumed by sender pipelines via `as_sender`.<sup>[8]</sup> The sender algebra - `when_all`, `let_value`, `upon_error` - works. The bridge cost is eliminable.<sup>[9]</sup>
 
 **"Section 10 grants awaitables a hypothetical bridge while measuring senders against literal spec text."** The paper's core comparison (Sections 6-8) depends on no hypothetical. The seven-step ceremony is measured against normative text. The three-step awaitable is measured against C++20 `await_ready()`. Both are shipped. P4126R1 enters only in Section 10's "sender pipeline consuming an awaitable" cells. Two of the awaitable column's four zeros depend on it; the coroutine-consumption cells do not. The core finding - that coroutines consuming synchronous I/O pay a protocol tax under senders but not under awaitables - stands on shipped specification alone.
 
@@ -507,9 +509,9 @@ The scope is the coroutine consumer. A sender pipeline never enters `as_awaitabl
 
 **"The composed algorithm is sequential - real composition requires parallelism."** Sequential composition over a single stream is expressed as a coroutine loop. Parallel composition across multiple streams - scatter-gather, concurrent requests, fan-out/fan-in - is expressed through the sender algebra via the bridge of Section 9. The paper does not argue that all composition is sequential. It argues that sequential I/O composition - the dominant pattern in protocol implementations (TLS, HTTP, WebSocket, SMTP, DNS resolution) - is a coroutine composing awaitables, and each inner await that completes synchronously pays the ceremony independently under the sender protocol. The multiplier is proportional to the protocol's depth: HTTP over TLS over TCP is three layers of composed coroutines, each with its own `read_some` loop, each iteration paying independently.
 
-**"The composed read loop has no cancellation propagation."** Stop tokens propagate transparently through `io_env` - the execution environment bundle passed to every IoAwaitable via `await_suspend(coroutine_handle<>, io_env const*)`.<sup>[7]</sup> Each child operation inherits the caller's stop token without explicit wiring. Every stream operation observes the stop token and may complete early with an operation-cancelled error. The mechanism is defined in [P4003R3](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4003r3.pdf).<sup>[7]</sup>
+**"The composed read loop has no cancellation propagation."** Stop tokens propagate transparently through `io_env` - the execution environment bundle passed to every IoAwaitable via `await_suspend(coroutine_handle<>, io_env const*)`.<sup>[7]</sup> Each child operation inherits the caller's stop token without explicit wiring. Every stream operation observes the stop token and may complete early with an operation-cancelled error. The mechanism is defined in [P4003R3](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4003r3.pdf)<sup>[7]</sup>.
 
-**"The bridge concedes the dependency."** The bridge goes both directions. [P4093R1](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4093r1.pdf)<sup>[9]</sup> bridges IoAwaitables into sender pipelines. [P4092R1](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4092r1.pdf)<sup>[11]</sup> bridges senders into coroutine-native code without `execution::task`. Section 10 shows the cost is asymmetric: if I/O is an awaitable, both consumers pay zero; if I/O is a sender, coroutines pay the ceremony.
+**"The bridge concedes the dependency."** The bridge goes both directions. [P4093R1](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4093r1.pdf)<sup>[8]</sup> bridges IoAwaitables into sender pipelines. [P4092R1](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4092r1.pdf)<sup>[10]</sup> bridges senders into coroutine-native code without `execution::task`. Section 10 shows the cost is asymmetric: if I/O is an awaitable, both consumers pay zero; if I/O is a sender, coroutines pay the ceremony.
 
 **"The comparison measures the wrong case."** Synchronous completion is not a corner case in I/O. Buffered writes, cached reads, DNS cache hits, and in-memory operations complete synchronously. A protocol that penalizes the common fast path compounds the cost across thousands of operations per connection.
 
@@ -551,12 +553,12 @@ Eric Niebler, Kirk Shoop, Lewis Baker, and their collaborators for `std::executi
 
 [7] [P4003R3](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4003r3.pdf) - "Ask: A Minimal Coroutine Execution Model" (Vinnie Falco, 2026).
 
-[8] [P2583R4](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p2583r4.pdf) - "Symmetric Transfer and Sender Composition" (Mungo Gill, Vinnie Falco, 2026).
+[8] [P4093R1](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4093r1.pdf) - "Producing Senders from Coroutine-Native Code" (Vinnie Falco, Steve Gerbino, 2026).
 
-[9] [P4093R1](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4093r1.pdf) - "Producing Senders from Coroutine-Native Code" (Vinnie Falco, Steve Gerbino, 2026).
+[9] [P4126R1](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4126r1.pdf) - "A Universal Continuation Model" (Vinnie Falco, Klemens Morgenstern, 2026).
 
-[10] [P4126R1](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4126r1.pdf) - "A Universal Continuation Model" (Vinnie Falco, Klemens Morgenstern, 2026).
+[10] [P4092R1](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4092r1.pdf) - "Consuming Senders from Coroutine-Native Code" (Vinnie Falco, Steve Gerbino, 2026).
 
-[11] [P4092R1](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4092r1.pdf) - "Consuming Senders from Coroutine-Native Code" (Vinnie Falco, Steve Gerbino, 2026).
+[11] [P4088R1](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4088r1.pdf) - "What C++20 Coroutines Already Buy The Standard" (Vinnie Falco, 2026).
 
-[12] [P4088R1](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4088r1.pdf) - "What C++20 Coroutines Already Buy The Standard" (Vinnie Falco, 2026).
+[12] [P2583R4](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p2583r4.pdf) - "Symmetric Transfer and Sender Composition" (Mungo Gill, Vinnie Falco, 2026).
