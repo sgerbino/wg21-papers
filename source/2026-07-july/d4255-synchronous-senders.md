@@ -194,23 +194,21 @@ execution::task<> log_lines(
 
 What happens inside `co_await sink.write(line)`, per the specification:
 
-1. `await_transform` receives the sender.<sup>[5]</sup> The promise type's `await_transform` is constrained to `sender`.<sup>[5]</sup> `[task.promise]` p10.
+1. `await_transform` receives the sender.<sup>[5]</sup> The promise type's `await_transform` is constrained to `sender`.<sup>[5]</sup> `[task.promise]` p10. Because the task's scheduler is `inline_scheduler`, `await_transform` forwards the sender to `as_awaitable` directly; with a non-inline scheduler it would first wrap the sender in `affine_on`.<sup>[6]</sup> `[exec.affine.on]`.
 
-2. The sender is wrapped with `affine`.<sup>[6]</sup> `[exec.affine.on]`. `await_transform` checks for a member `as_awaitable` first; this sender provides none, so it takes the wrapping branch.<sup>[5]</sup>
+2. `as_awaitable` checks the sender for a member `as_awaitable`; this sender provides none, so it constructs a `sender-awaitable`.<sup>[3]</sup> `[exec.as.awaitable]`.
 
-3. `as_awaitable` constructs a `sender-awaitable`.<sup>[3]</sup> `[exec.as.awaitable]`.
+3. The `sender-awaitable` constructor calls `connect(sndr, awaitable-receiver)`.<sup>[3]</sup> The operation state is materialized. The receiver is wired.
 
-4. The `sender-awaitable` constructor calls `connect(sndr, awaitable-receiver)`.<sup>[3]</sup> The operation state is materialized. The receiver is wired.
+4. `await_ready()` returns `false`.<sup>[3]</sup> Unconditionally. The coroutine suspends.
 
-5. `await_ready()` returns `false`.<sup>[3]</sup> Unconditionally. The coroutine suspends.
+5. `await_suspend` calls `start(state)`.<sup>[3]</sup> Inside `start`, `set_value(receiver)` fires synchronously.
 
-6. `await_suspend` calls `start(state)`.<sup>[3]</sup> Inside `start`, `set_value(receiver)` fires synchronously.
+6. The receiver stores the result in a `variant` and calls `.resume()` on the coroutine handle.<sup>[3]</sup> The coroutine resumes.
 
-7. The receiver stores the result in a `variant` and calls `.resume()` on the coroutine handle.<sup>[3]</sup> The coroutine resumes.
+7. `await_resume()` extracts the value from the `variant`.<sup>[3]</sup>
 
-8. `await_resume()` extracts the value from the `variant`.<sup>[3]</sup>
-
-Eight protocol steps. One suspension and one resumption. One operation state construction. One receiver instantiation. One `variant` emplacement. One scheduler affinity check. To append bytes to a string.
+Seven protocol steps. One suspension and one resumption. One operation state construction. One receiver instantiation. One `variant` emplacement. To append bytes to a string.
 
 ## 7. The Awaitable Path
 
@@ -270,19 +268,18 @@ What happens inside `co_await sink.write(line)`:
 
 3. `await_resume()` returns.
 
-Three protocol steps. No suspension. No operation state. No receiver. No `variant`. No scheduler affinity check. The bytes were appended to the string.
+Three protocol steps. No suspension. No operation state. No receiver. No `variant`. The bytes were appended to the string.
 
 ## 8. Comparison
 
 | Property | Awaitable | Sender |
 | --------------------------------- | --------- | ------ |
-| Protocol steps per write | 3 | 8 |
+| Protocol steps per write | 3 | 7 |
 | Coroutine suspensions | 0 | 1 |
 | Coroutine resumptions | 0 | 1 |
 | Operation state constructions | 0 | 1 |
 | Receiver instantiations | 0 | 1 |
 | `variant` emplacements | 0 | 1 |
-| Scheduler affinity checks | 0 | 1 |
 | Type erasure cost | 1 vtable call, 0 allocations | `any_sender`: 0-1 allocations |
 
 ## 9. Interoperation
@@ -315,13 +312,13 @@ The question is not which model is more powerful. It is which implementation sha
 | Consumer / I/O shape | Awaitable | Sender |
 | -------------------- | --------- | ------ |
 | **Coroutine** | | |
-| Synchronous | Zero (no suspend) | 8-step ceremony (Section 6) |
+| Synchronous | Zero (no suspend) | 7-step ceremony (Section 6) |
 | Asynchronous | Zero protocol overhead (inherent suspend only) | Inherent suspend + ceremony |
 | **Sender pipeline** | | |
 | Synchronous | Zero ([P4126R1](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4126r1.pdf))<sup>[10]</sup> | Zero |
 | Asynchronous | Zero ([P4126R1](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4126r1.pdf))<sup>[10]</sup> | Zero |
 
-The awaitable column is four zeros. For synchronous I/O, the sender column carries the full eight-step ceremony of Section 6. For asynchronous I/O, the sender protocol adds ceremony - `connect`, receiver wiring, `variant` emplacement, affinity wrapping - atop the inherent suspend. The ceremony is not inherent to the async operation. It is inherent to the sender protocol.
+The awaitable column is four zeros. For synchronous I/O, the sender column carries the full seven-step ceremony of Section 6. For asynchronous I/O, the sender protocol adds ceremony - `connect`, receiver wiring, `variant` emplacement, affinity wrapping - atop the inherent suspend. The ceremony is not inherent to the async operation. It is inherent to the sender protocol.
 
 For asynchronous I/O these added steps are a step count, not a separately observable runtime cost: once the operation suspends to a scheduler, the suspension dominates and the steps are not measurable above it. The case this paper isolates is synchronous completion, where no suspension absorbs them.
 
@@ -401,11 +398,11 @@ The sender model now has two value-delivery mechanisms: channels for asynchronou
 
 ### 12.4. Conditional Affinity Wrapping
 
-`await_transform` wraps every sender that does not customize `as_awaitable` in `affine` to enforce scheduler affinity.<sup>[5]</sup> For a sender that completes synchronously - whose bytes are already in the string before `co_await` evaluates - the affinity check serves no purpose.
+`await_transform` wraps a sender in `affine_on` when the task's scheduler is not `inline_scheduler`.<sup>[6]</sup> For a sender that completes synchronously - whose bytes are already in the string before `co_await` evaluates - the affinity wrap serves no purpose.
 
-[P3552R3](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3552r3.html)<sup>[5]</sup> contemplates detecting `inline_scheduler` in `await_transform` and bypassing the wrap. But the detection is type-based. Custom senders that complete synchronously need to opt in via the readiness query from Section 12.1 or a new completion-behavior tag.
+[P3552R3](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3552r3.html)<sup>[5]</sup> already skips the wrap when the task's scheduler is `inline_scheduler`. But that condition is type-based - it recognizes one built-in scheduler type. A sender that always completes synchronously while awaited in a task carrying a real scheduler still pays the wrap, because `await_transform` sees a non-inline scheduler and cannot tell the sender will not suspend. To skip the wrap in that case, the sender must advertise synchronous completion - through the readiness query of Section 12.1 or a dedicated completion-behavior tag - so `await_transform` can bypass `affine_on` regardless of the task's scheduler type.
 
-The sender model now carries a readiness query, a direct extraction path, two value-delivery mechanisms, and conditional affinity wrapping.
+This adds no new mechanism: it reuses the readiness query of Section 12.1 to generalize an affinity bypass that already exists, lifting it from a single built-in scheduler type to any sender that advertises synchronous completion.
 
 ### 12.5. Zero-Allocation Type Erasure
 
@@ -482,15 +479,15 @@ decltype(auto) as_awaitable(Expr&& e, Promise& p)
     if constexpr (requires { e.as_awaitable(p); })
         return e.as_awaitable(p);        // the sender's own awaitable
     else
-        return sender-awaitable{e, p};   // the eight steps of Section 6
+        return sender-awaitable{e, p};   // the seven steps of Section 6
 }
 ```
 
-In `execution::task`, `await_transform` makes this same check before it wraps anything in `affine`: a sender that provides `as_awaitable` is used directly, so the affinity wrap of Section 6 is skipped as well.<sup>[5]</sup> A sender whose `as_awaitable` returns a synchronous awaitable then takes the path of Section 7. `connect`, the receiver, `start`, the `variant`, and the affinity wrap are never instantiated. Three protocol steps, not eight.
+In `execution::task` with an `inline_scheduler`, `await_transform` forwards the sender to `as_awaitable` with no `affine_on` wrap, and `as_awaitable` honors a sender's own member `as_awaitable` when present, so such a sender is used directly.<sup>[5]</sup> A sender whose `as_awaitable` returns a synchronous awaitable then takes the path of Section 7. `connect`, the receiver, `start`, and the `variant` are never instantiated. Three protocol steps, not seven.
 
 This is the paper's thesis arrived at from the sender side. The synchronous fast path the sender reaches here is an awaitable: the sender hands one back, and the awaitable does the work. Closing the gap for one concrete sender, awaited from a coroutine, is one existing customization point returning the three-member struct of Section 7.
 
-Two costs remain. The member is manual and per-sender; a sender that omits it inherits the eight-step path. And it is lost under type erasure: `any_sender` erases the concrete sender and the member with it, and `any_sender::connect` materializes the operation state of Section 12.5. Type erasure is the one sender-specific cost no `as_awaitable` member reaches.
+Two costs remain. The member is manual and per-sender; a sender that omits it inherits the seven-step path. And it is lost under type erasure: `any_sender` erases the concrete sender and the member with it, and `any_sender::connect` materializes the operation state of Section 12.5. Type erasure is the one sender-specific cost no `as_awaitable` member reaches.
 
 The scope is the coroutine consumer. A sender pipeline never enters `as_awaitable`; Section 10 records zero for both synchronous pipeline cells.
 
@@ -504,7 +501,7 @@ The scope is the coroutine consumer. A sender pipeline never enters `as_awaitabl
 
 **"Awaitables don't compose into work graphs."** They do, through the bridge. Section 9 shows IoAwaitables consumed by sender pipelines via `as_sender`.<sup>[9]</sup> The sender algebra - `when_all`, `let_value`, `upon_error` - works. The bridge cost is eliminable.<sup>[10]</sup>
 
-**"Section 10 grants awaitables a hypothetical bridge while measuring senders against literal spec text."** The paper's core comparison (Sections 6-8) depends on no hypothetical. The eight-step ceremony is measured against normative text. The three-step awaitable is measured against C++20 `await_ready()`. Both are shipped. P4126R1 enters only in Section 10's "sender pipeline consuming an awaitable" cells. Two of the awaitable column's four zeros depend on it; the coroutine-consumption cells do not. The core finding - that coroutines consuming synchronous I/O pay a protocol tax under senders but not under awaitables - stands on shipped specification alone.
+**"Section 10 grants awaitables a hypothetical bridge while measuring senders against literal spec text."** The paper's core comparison (Sections 6-8) depends on no hypothetical. The seven-step ceremony is measured against normative text. The three-step awaitable is measured against C++20 `await_ready()`. Both are shipped. P4126R1 enters only in Section 10's "sender pipeline consuming an awaitable" cells. Two of the awaitable column's four zeros depend on it; the coroutine-consumption cells do not. The core finding - that coroutines consuming synchronous I/O pay a protocol tax under senders but not under awaitables - stands on shipped specification alone.
 
 **"Unconditional suspension is the sound default."** The paper does not argue the default is unsound. It argues the sender protocol provides no override. The awaitable protocol solved this in C++20 with a single boolean. The question is not whether the default is correct but why the protocol has no conditional path.
 
@@ -518,7 +515,7 @@ The scope is the coroutine consumer. A sender pipeline never enters `as_awaitabl
 
 **"Senders retarget via scheduler swap; awaitables require recompilation."** Section 4 demonstrates retargeting by relinking. One vtable call, zero allocations. The linker swaps the object file.
 
-**"The modifications in Section 12 are natural evolution."** Each modification introduces a new mechanism: a readiness query, a second value-delivery path, conditional affinity wrapping, virtual dispatch for type erasure. The awaitable protocol provides the same capability with three members.
+**"The modifications in Section 12 are natural evolution."** The modifications introduce a readiness query, a second value-delivery path, and virtual dispatch for type erasure; they also generalize the existing scheduler-affinity bypass from one built-in type to any synchronous sender. The awaitable protocol provides the same capability with three members.
 
 **"The type erasure comparison is asymmetric."** Both paths use type erasure at the same boundary. The awaitable path produces one indirect call and zero allocations. `any_sender::connect` materializes an operation state the compiler cannot see through.
 
@@ -536,7 +533,7 @@ The observations documented in this paper would be discharged if any of the foll
 
 ## Acknowledgements
 
-Eric Niebler, Kirk Shoop, Lewis Baker, and their collaborators for `std::execution` and the sender algebra. Dietmar K&uuml;hl and Maikel Nadolski for [P3552R3](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3552r3.html) (`std::execution::task`). Robert Leahy for the AIO-to-sender bridge and [P2583R4](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p2583r4.pdf) (symmetric transfer).
+Eric Niebler, Kirk Shoop, Lewis Baker, and their collaborators for `std::execution` and the sender algebra. Dietmar K&uuml;hl and Maikel Nadolski for [P3552R3](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3552r3.html) (`std::execution::task`). Robert Leahy for the AIO-to-sender bridge. Mungo Gill for [P2583R4](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p2583r4.pdf) (symmetric transfer).
 
 ## References
 
@@ -554,7 +551,7 @@ Eric Niebler, Kirk Shoop, Lewis Baker, and their collaborators for `std::executi
 
 [7] [P4003R3](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4003r3.pdf) - "Ask: A Minimal Coroutine Execution Model" (Vinnie Falco, 2026).
 
-[8] [P2583R4](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p2583r4.pdf) - "Symmetric Transfer and Sender Composition" (Vinnie Falco, 2026).
+[8] [P2583R4](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p2583r4.pdf) - "Symmetric Transfer and Sender Composition" (Mungo Gill, Vinnie Falco, 2026).
 
 [9] [P4093R1](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4093r1.pdf) - "Producing Senders from Coroutine-Native Code" (Vinnie Falco, Steve Gerbino, 2026).
 
