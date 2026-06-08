@@ -481,7 +481,7 @@ decltype(auto) as_awaitable(Expr&& e, Promise& p)
     if constexpr (requires { e.as_awaitable(p); })
         return e.as_awaitable(p);        // the sender's own awaitable
     else
-        return sender-awaitable{e, p};   // the seven steps of Section 6
+        return sender_awaitable{e, p};   // the seven steps of Section 6
 }
 ```
 
